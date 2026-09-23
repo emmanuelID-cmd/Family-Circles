@@ -43,3 +43,10 @@ Open `index.html` directly in a browser to preview the mockup.
 - Circle row editing now persists add/remove membership changes and immediately re-renders labels and active-filter results.
 
 - Added a host-only View action and Post Views modal for selected people, without changing post audience permissions.
+
+## Repository organization
+
+- `src/` contains the Vite + React application.
+- `docs/` contains product requirements and team reference material.
+- `docs/references/` contains the teammate HTML reference for the planned integration pass.
+- `public/assets/` contains the visual design reference used by the mockup.
