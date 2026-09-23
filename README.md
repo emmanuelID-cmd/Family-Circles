@@ -31,3 +31,15 @@ The README should be updated when major product, architecture, or workflow chang
 ## Current project status
 
 This repository has been initialized from the Circles PRD. Application implementation, technology selection, and deployment configuration have not yet been added.
+
+## Illustrative demo
+
+The repository now includes a dependency-free browser mockup in `index.html`, `styles.css`, and `app.js`. It implements the PRD’s core demo states: Home, ALL, individual circles, hidden circles, membership labels, Circle management, separate Unfollow actions, and an action-history affordance. The checked-in JPEG is retained as the visual reference for the Instagram-inspired composition; the interface itself is recreated as live HTML/CSS rather than displayed as an image.
+
+Open `index.html` directly in a browser to preview the mockup.
+
+- Updated the demo to start in dark mode with a light/dark toggle, remove the duplicate sidebar, align identity and circle metadata in one row, and support ALL or multi-circle filtering. Search is intentionally excluded for later team integration.
+
+- Circle row editing now persists add/remove membership changes and immediately re-renders labels and active-filter results.
+
+- Added a host-only View action and Post Views modal for selected people, without changing post audience permissions.
