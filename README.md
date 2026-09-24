@@ -1,6 +1,6 @@
 ﻿# Circles
 
-Circles is an MVP for an Instagram-like app that helps people organize followed accounts into private viewing circles and quickly browse focused feeds.
+Circles is a React/Vite/Tailwind prototype for an Instagram-like app that helps people organize followed accounts into private viewing circles and quickly browse focused feeds.
 
 ## Product goal
 
@@ -30,19 +30,43 @@ The README should be updated when major product, architecture, or workflow chang
 
 ## Current project status
 
-This repository has been initialized from the Circles PRD. Application implementation, technology selection, and deployment configuration have not yet been added.
+The repository contains a working front-end prototype built with:
 
-## Illustrative demo
+- React 19 and React DOM for the interface and local state.
+- Vite 7 for development and production builds.
+- Tailwind CSS 4, loaded through `@tailwindcss/vite`, alongside the prototype’s custom CSS in `src/styles.css`.
 
-The repository now includes a dependency-free browser mockup in `index.html`, `styles.css`, and `app.js`. It implements the PRD’s core demo states: Home, ALL, individual circles, hidden circles, membership labels, Circle management, separate Unfollow actions, and an action-history affordance. The checked-in JPEG is retained as the visual reference for the Instagram-inspired composition; the interface itself is recreated as live HTML/CSS rather than displayed as an image.
+The main screen is implemented in `src/App.jsx`, mounted from `src/main.jsx`, and styled in `src/styles.css`. Product requirements and reference material remain in `docs/`.
 
-Open `index.html` directly in a browser to preview the mockup.
+## Run locally
 
-- Updated the demo to start in dark mode with a light/dark toggle, remove the duplicate sidebar, align identity and circle metadata in one row, and support ALL or multi-circle filtering. Search is intentionally excluded for later team integration.
+Install dependencies, start the Vite development server, and open the URL it reports:
 
-- Circle row editing now persists add/remove membership changes and immediately re-renders labels and active-filter results.
+```bash
+npm install
+npm run dev
+```
 
-- Added a host-only View action and Post Views modal for selected people, without changing post audience permissions.
+Create a production build with:
+
+```bash
+npm run build
+```
+
+## Prototype behavior
+
+The current screen includes Circles, Following, and Followers tabs; ALL and multi-circle filtering; search; dark/light theme switching; local circle membership editing; selection checkboxes; and a private Post Views modal. Circle membership changes update the visible rows and active filters during the session. The checked-in JPEG in `public/assets/` is retained as a visual design reference, not rendered as the application UI.
+
+## Known limitations
+
+This is a front-end prototype, not a connected product:
+
+- People, circles, relationships, profile counts, and colors are hard-coded demo data.
+- State is held in React memory only and is lost on refresh; there is no backend, authentication, database, or persistence.
+- The plus/manage control, sort control, action history, hidden-circle workflows, circle creation/deletion, paid expansions, and unfollow flow are not implemented.
+- The Post Views checkboxes and Apply action are presentational; they do not save or change a feed.
+- Message and follow-back actions use placeholder browser alerts.
+- The UI has not yet been integrated with a real social platform or validated against production accessibility, content, and responsive requirements.
 
 ## Repository organization
 
