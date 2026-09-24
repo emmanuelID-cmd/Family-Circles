@@ -62,10 +62,10 @@ The current screen includes Circles, Following, and Followers tabs; tab-scoped s
 This is a front-end prototype, not a connected product:
 
 - People, circles, relationships, profile counts, capacity rules, and colors are hard-coded demo data.
-- State is held in React memory only and is lost on refresh; there is no backend, authentication, database, or persistence.
+- Prototype people and circles remain in React memory and are lost on refresh; there is no database or persistence.
 - The plus/manage control, action history, hidden-circle workflows, circle creation/deletion, paid capacity expansions, confirmed follow/unfollow persistence, and real message delivery are not implemented.
 - Sort dates and relationship flags are demo data; there is no connected account or feed service.
-- Selection, Post Views, relationship actions, and messaging are session-only local prototype behavior; they are not connected to a backend or social platform.
+- Selection, Post Views, and messaging are session-only local prototype behavior. Relationship row actions remain demo-only.
 - The UI has not yet been integrated with a real social platform or validated against production accessibility, content, and responsive requirements.
 
 ## Repository organization
