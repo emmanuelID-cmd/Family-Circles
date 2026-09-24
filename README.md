@@ -55,17 +55,17 @@ npm run build
 
 ## Prototype behavior
 
-The current screen includes Circles, Following, and Followers tabs; ALL and multi-circle filtering; search; dark/light theme switching; local circle membership editing; selection checkboxes; and a private Post Views modal. Circle membership changes update the visible rows and active filters during the session. The checked-in JPEG in `public/assets/` is retained as a visual design reference, not rendered as the application UI.
+The current screen includes Circles, Following, and Followers tabs; tab-scoped select-all and row selection; circle filtering below the search bar; search with a magnifying-glass affordance; a dark single-choice sorting panel; dark/light theme switching; more than 30 synthetic accounts; Suggested Users; local circle membership editing; saved Post Views and Circle Manager dialogs; relationship actions; and a reference-style messaging view. Circle editing supports multi-person selection, displays each Circle's live `members / 20` occupancy, and rejects an entire change that would exceed the free 20-member capacity. Sorting uses explicit demo relationship dates and applies to the current tab’s filtered/search results. The dialogs center over a blocking backdrop and require Cancel or Save Changes. The checked-in JPEGs in `public/assets/` are retained as visual design references, not rendered as the application UI.
 
 ## Known limitations
 
 This is a front-end prototype, not a connected product:
 
-- People, circles, relationships, profile counts, and colors are hard-coded demo data.
+- People, circles, relationships, profile counts, capacity rules, and colors are hard-coded demo data.
 - State is held in React memory only and is lost on refresh; there is no backend, authentication, database, or persistence.
-- The plus/manage control, sort control, action history, hidden-circle workflows, circle creation/deletion, paid expansions, and unfollow flow are not implemented.
-- The Post Views checkboxes and Apply action are presentational; they do not save or change a feed.
-- Message and follow-back actions use placeholder browser alerts.
+- The plus/manage control, action history, hidden-circle workflows, circle creation/deletion, paid capacity expansions, confirmed follow/unfollow persistence, and real message delivery are not implemented.
+- Sort dates and relationship flags are demo data; there is no connected account or feed service.
+- Selection, Post Views, relationship actions, and messaging are session-only local prototype behavior; they are not connected to a backend or social platform.
 - The UI has not yet been integrated with a real social platform or validated against production accessibility, content, and responsive requirements.
 
 ## Repository organization
@@ -73,4 +73,4 @@ This is a front-end prototype, not a connected product:
 - `src/` contains the Vite + React application.
 - `docs/` contains product requirements and team reference material.
 - `docs/references/` contains the teammate HTML reference for the planned integration pass.
-- `public/assets/` contains the visual design reference used by the mockup.
+- `public/assets/` contains the visual design references used by the prototype.
