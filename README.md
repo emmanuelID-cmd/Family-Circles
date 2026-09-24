@@ -49,7 +49,7 @@ npm run dev
 
 ### Supabase setup
 
-Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to your Supabase project URL and publishable key. `.env.local` is ignored by Git. Never put a Supabase secret/service key in a `VITE_` variable.
+Create a local `.env.local` file and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` to your Supabase project URL and publishable key. `.env.local` is ignored by Git. `VITE_SUPABASE_ANON_KEY` remains supported for existing local setups. Never put a Supabase secret/service key in a `VITE_` variable.
 
 Run [`supabase/migrations/20260924000000_initial_schema.sql`](supabase/migrations/20260924000000_initial_schema.sql) in the Supabase Dashboard SQL Editor to create the profile, people, circles, and circle-membership tables with row-level security policies. These policies scope reads and writes to the signed-in user and enforce the 20-person circle limit. In Supabase Authentication URL Configuration, allow `http://127.0.0.1:5173/**` for local email confirmation redirects (also add `http://localhost:5173/**` if you use that hostname). The app includes email sign-up/sign-in and stores people, circles, circle membership, and saved relationship flags in Supabase. New sign-ups may need to confirm their email before signing in.
 
