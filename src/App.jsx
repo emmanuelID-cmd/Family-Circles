@@ -1,64 +1,128 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import Dashboard from "./Dashboard.jsx";
+import { loadFamilyData } from "./lib/familyData.js";
+import { supabase } from "./lib/supabase.js";
 
-const CIRCLE_LIMIT = 20;
-const circles = [{ id: "family", name: "Family" }, { id: "close", name: "Close friends" }, { id: "work", name: "Work" }];
-const names = ["Maya Chen", "Jon Bell", "Sofia Reyes", "Andre Lewis", "Nora Patel", "Eli Brooks", "Ava Martin", "Theo Grant", "Lena Ortiz", "Caleb Ross", "Zoe Kim", "Miles Carter", "Iris Cooper", "Noah Price", "Mia Turner", "Owen Reed", "Jade Foster", "Leo Hughes", "Ruby Allen", "Finn Perry", "Tessa Cole", "Kai Morgan", "Ella Stone", "Ben Wright", "Amara King", "Dylan Ward", "Priya Shah", "Lucas Gray", "Mila Scott", "Ethan Young", "Grace Hill", "Mateo Cruz", "Ivy James", "Henry Fox", "Sadie Park", "Cole Baker"];
-const colors = ["#d77658", "#5d7c78", "#756595", "#ce9b43", "#b55c7d", "#4d7bb5"];
-const initialPeople = names.map((name, index) => {
-  const hostFollows = index < 24;
-  const memberships = hostFollows ? (index % 5 === 0 ? ["family"] : index % 5 === 1 ? ["close"] : index % 5 === 2 ? ["work"] : index % 5 === 3 ? ["family", "close"] : []) : [];
-  return { id: index + 1, name, handle: `@${name.toLowerCase().replace(" ", ".")}`, circles: memberships, color: colors[index % colors.length], followsHost: index % 3 !== 1, hostFollows, followedByHost: hostFollows ? `2026-0${(index % 8) + 1}-${String((index % 27) + 1).padStart(2, "0")}` : null, followedHost: `2026-0${(index % 8) + 1}-${String((index % 27) + 1).padStart(2, "0")}`, followers: `${(index + 2) * 340}`, posts: `${48 + index * 7}` };
-});
-const sortOptions = [{ id: "default", label: "Default" }, { id: "latest", label: "Date followed: Latest" }, { id: "earliest", label: "Date followed: Earliest" }];
-const viewTypes = ["Posts", "Stories", "Reels", "Reposts"];
+function AuthForm() {
+  const [mode, setMode] = useState("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      if (mode === "signup") {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: { display_name: displayName.trim() },
+            emailRedirectTo: window.location.origin,
+          },
+        });
+        if (signUpError) throw signUpError;
+        if (!data.session) setMessage("Check your email to confirm your account, then sign in.");
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (signInError) throw signInError;
+      }
+    } catch (authError) {
+      setError(authError.message || "Authentication failed. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return <main className="auth-shell"><form className="auth-card" onSubmit={submit}>
+    <div className="brand"><span className="brand-mark">◎</span>circles</div>
+    <h1>{mode === "signup" ? "Create your account" : "Welcome back"}</h1>
+    <p className="auth-intro">Sign in to keep your circles and people saved to your account.</p>
+    {mode === "signup" && <label className="auth-field">Display name<input autoComplete="name" maxLength={80} value={displayName} onChange={(event) => setDisplayName(event.target.value)} required /></label>}
+    <label className="auth-field">Email<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
+    <label className="auth-field">Password<input type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={mode === "signup" ? 8 : undefined} value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
+    {error && <p className="auth-error" role="alert">{error}</p>}
+    {message && <p className="auth-message" role="status">{message}</p>}
+    <button className="primary auth-submit" type="submit" disabled={busy}>{busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}</button>
+    <p className="auth-switch">{mode === "signup" ? "Already have an account?" : "New to Circles?"} <button type="button" onClick={() => { setMode(mode === "signup" ? "signin" : "signup"); setError(""); setMessage(""); }}>{mode === "signup" ? "Sign in" : "Create an account"}</button></p>
+  </form></main>;
+}
 
 export default function App() {
-  const [people, setPeople] = useState(initialPeople), [tab, setTab] = useState("circles"), [query, setQuery] = useState(""), [active, setActive] = useState([]), [selected, setSelected] = useState(new Set()), [circleEditor, setCircleEditor] = useState(null), [viewing, setViewing] = useState(null), [viewDraft, setViewDraft] = useState(viewTypes), [relationshipDialog, setRelationshipDialog] = useState(null), [messaging, setMessaging] = useState(null), [light, setLight] = useState(false), [sort, setSort] = useState("default"), [sortOpen, setSortOpen] = useState(false), [postViews, setPostViews] = useState({});
-  const shown = useMemo(() => {
-    let list = tab === "circles" ? people.filter((person) => person.hostFollows) : tab === "following" ? people.filter((person) => person.hostFollows) : people.filter((person) => person.followsHost);
-    if (tab === "circles" && active.length) list = list.filter((person) => person.circles.some((circle) => active.includes(circle)));
-    list = list.filter((person) => `${person.name} ${person.handle}`.toLowerCase().includes(query.toLowerCase().trim()));
-    if (sort !== "default") { const dateKey = tab === "followers" ? "followedHost" : "followedByHost"; list = [...list].sort((a, b) => sort === "latest" ? (b[dateKey] || "").localeCompare(a[dateKey] || "") : (a[dateKey] || "").localeCompare(b[dateKey] || "")); }
-    return list;
-  }, [people, tab, active, query, sort]);
-  const suggestions = people.filter((person) => !person.hostFollows && `${person.name} ${person.handle}`.toLowerCase().includes(query.toLowerCase().trim()));
-  const allShownSelected = shown.length > 0 && shown.every((person) => selected.has(person.id));
-  const someShownSelected = shown.some((person) => selected.has(person.id)) && !allShownSelected;
-  const memberCounts = people.reduce((counts, person) => { person.circles.forEach((id) => { counts[id] = (counts[id] || 0) + 1; }); return counts; }, {});
-  const clearSelection = () => setSelected(new Set());
-  const resolveTargets = (person) => selected.size ? [...selected] : [person.id];
-  const selectTab = (view) => { setTab(view); clearSelection(); };
-  const toggleCircle = (id) => setActive(active.includes(id) ? active.filter((circle) => circle !== id) : [...active, id]);
-  const toggleSelected = (id, checked) => { const next = new Set(selected); checked ? next.add(id) : next.delete(id); setSelected(next); };
-  const toggleAllShown = (checked) => { const next = new Set(selected); shown.forEach((person) => checked ? next.add(person.id) : next.delete(person.id)); setSelected(next); };
-  const setFollowing = (ids, value) => setPeople((current) => current.map((person) => ids.includes(person.id) ? { ...person, hostFollows: value, circles: value ? person.circles : [], followedByHost: value && !person.followedByHost ? "2026-09-24" : person.followedByHost } : person));
-  const openCircleEditor = (person) => { const ids = resolveTargets(person); const draft = Object.fromEntries(people.filter((item) => ids.includes(item.id)).map((item) => [item.id, [...item.circles]])); setCircleEditor({ ids, draft, error: null }); };
-  const openViewEditor = (person) => { const ids = resolveTargets(person); const source = people.find((item) => item.id === ids[0]); setViewing({ ids }); setViewDraft(postViews[source.id] || viewTypes); };
-  const openUnfollowDialog = (person) => setRelationshipDialog({ ids: resolveTargets(person) });
-  const toggleEditorCircle = (circleId, checked) => setCircleEditor((editor) => ({ ...editor, error: null, draft: Object.fromEntries(editor.ids.map((id) => [id, checked ? [...new Set([...editor.draft[id], circleId])] : editor.draft[id].filter((item) => item !== circleId)])) }));
-  const saveCircleEditor = () => {
-    const proposed = people.map((person) => circleEditor.ids.includes(person.id) ? { ...person, circles: circleEditor.draft[person.id] } : person);
-    const counts = proposed.reduce((result, person) => { person.circles.forEach((id) => { result[id] = (result[id] || 0) + 1; }); return result; }, {});
-    const overflow = circles.find((circle) => (counts[circle.id] || 0) > CIRCLE_LIMIT);
-    if (overflow) { const current = memberCounts[overflow.id] || 0; const proposedCount = counts[overflow.id]; setCircleEditor({ ...circleEditor, error: { id: overflow.id, current, proposed: proposedCount, needed: proposedCount - CIRCLE_LIMIT } }); return; }
-    setPeople(proposed); clearSelection(); setCircleEditor(null);
+  const [session, setSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [workspace, setWorkspace] = useState({ people: [], circles: [] });
+  const [dataLoading, setDataLoading] = useState(false);
+  const [dataError, setDataError] = useState("");
+  const [retryIndex, setRetryIndex] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+    });
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!active) return;
+      if (error) setDataError(error.message);
+      setSession(data?.session || null);
+      setAuthLoading(false);
+    }).catch((error) => {
+      if (active) {
+        setDataError(error.message || "Could not restore your session.");
+        setAuthLoading(false);
+      }
+    });
+    return () => { active = false; subscription.unsubscribe(); };
+  }, []);
+
+  const refreshWorkspace = useCallback(async () => {
+    const nextWorkspace = await loadFamilyData();
+    setWorkspace(nextWorkspace);
+    return nextWorkspace;
+  }, []);
+
+  useEffect(() => {
+    if (!session?.user) {
+      setWorkspace({ people: [], circles: [] });
+      setDataLoading(false);
+      return undefined;
+    }
+    let active = true;
+    const load = async () => {
+      setDataLoading(true);
+      setDataError("");
+      try {
+        const user = session.user;
+        const displayName = user.user_metadata?.display_name || user.email?.split("@")[0] || "Circles user";
+        const { error: profileError } = await supabase.from("profiles").upsert({ id: user.id, display_name: displayName }, { onConflict: "id" });
+        if (profileError) throw profileError;
+        const nextWorkspace = await loadFamilyData();
+        if (active) setWorkspace(nextWorkspace);
+      } catch (loadError) {
+        if (active) setDataError(loadError.message || "Could not load your data.");
+      } finally {
+        if (active) setDataLoading(false);
+      }
+    };
+    load();
+    return () => { active = false; };
+  }, [session?.user?.id, retryIndex]);
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) setDataError(error.message);
   };
-  const saveViewEditor = () => { setPostViews((current) => { const next = { ...current }; viewing.ids.forEach((id) => { next[id] = viewDraft; }); return next; }); clearSelection(); setViewing(null); };
-  const confirmUnfollow = () => { setFollowing(relationshipDialog.ids, false); clearSelection(); setRelationshipDialog(null); };
-  const followTargets = (person) => { setFollowing(resolveTargets(person), true); clearSelection(); };
-  const bulkUnfollow = () => { if (selected.size) setRelationshipDialog({ ids: [...selected] }); };
-  const bulkFollow = () => { if (selected.size) { setFollowing([...selected], true); clearSelection(); } };
-  const openMessage = (person) => { clearSelection(); setMessaging(person); };
-  const actionFor = (person, suggested = false) => suggested ? [person.followsHost ? "Follow Back" : "Follow"] : tab === "circles" ? ["View", "Circle", "Unfollow"] : tab === "following" ? ["Following", "Message"] : [person.hostFollows ? "Following" : "Follow Back"];
-  const handleAction = (person, action) => { if (action === "View") openViewEditor(person); else if (action === "Circle") openCircleEditor(person); else if (action === "Message") openMessage(person); else if (action === "Unfollow" || action === "Following") openUnfollowDialog(person); else followTargets(person); };
-  const hostAvatar = <div className="host-avatar-large" aria-label="host_user avatar">M</div>;
-  const renderRow = (person, suggested = false) => <article className={`reference-row ${tab === "circles" ? "circle-row" : "relationship-row"} ${suggested ? "suggested-row" : ""}`} key={person.id}>{!suggested && <input className="check" type="checkbox" checked={selected.has(person.id)} onChange={(event) => toggleSelected(person.id, event.target.checked)} aria-label={`Select ${person.name}`} />}<div className="person-avatar" style={{ background: person.color }}>{person.name.split(" ").map((part) => part[0])}</div><div className="person-info"><strong>{person.name}</strong><span>{person.handle}</span></div>{tab === "circles" && !suggested && <div className="chips">{person.circles.map((id) => <span className="chip" key={id}>{circles.find((circle) => circle.id === id).name}</span>)}</div>}<div className="row-actions">{actionFor(person, suggested).map((action) => <button key={action} onClick={() => handleAction(person, action)}>{action}</button>)}</div></article>;
 
-  if (messaging) return <main className="message-page"><header className="message-topbar"><button className="message-back" onClick={() => setMessaging(null)} aria-label="Back to account views">←</button>{hostAvatar}<div className="message-recipient"><strong>{messaging.name}<span className="verified" aria-label="Verified">✓</span></strong><span>{messaging.handle}</span></div></header><section className="message-profile"><div className="message-photo-placeholder">{hostAvatar}</div><h1>{messaging.name}<span className="verified" aria-label="Verified">✓</span></h1><p>{messaging.handle}</p><p>{messaging.followers} followers · {messaging.posts} posts</p><p>You've followed this account since {messaging.followedByHost?.slice(0, 4) || "2026"}</p></section><form className="message-composer" onSubmit={(event) => event.preventDefault()}><input placeholder="Message..." aria-label={`Message ${messaging.name}`} /><button type="submit" aria-label="Send message">➤</button></form></main>;
+  if (authLoading) return <main className="auth-shell"><p className="auth-loading">Loading your session…</p></main>;
+  if (!session) return <AuthForm />;
+  if (dataLoading) return <main className="auth-shell"><p className="auth-loading">Loading your circles…</p></main>;
+  if (dataError) return <main className="auth-shell"><section className="auth-card"><div className="brand"><span className="brand-mark">◎</span>circles</div><h1>Couldn’t load your data</h1><p className="auth-error" role="alert">{dataError}</p><p className="auth-intro">Confirm that you ran the Supabase migration and that this project’s Row Level Security policies are enabled.</p><div className="auth-actions"><button className="primary" onClick={() => setRetryIndex((value) => value + 1)}>Retry</button><button className="secondary" onClick={signOut}>Sign out</button></div></section></main>;
 
-  return <main className={light ? "shell light" : "shell dark"}><div className="reference-shell"><header className="topbar"><div className="brand"><span className="brand-mark">◎</span>circles</div><button className="theme-toggle" onClick={() => setLight(!light)} aria-label="Toggle color theme">{light ? "☾" : "☼"}</button></header><section className="reference-header"><div className="reference-profile"><div className="reference-profile-avatar">M</div><div><h2>host_user</h2><p>Your private account view</p><p>5 Followers · 3 Following</p></div></div><button className="manage-btn" aria-label="Manage circles">＋</button></section><nav className="reference-tabs" aria-label="Account views">{["circles", "following", "followers"].map((view) => <button key={view} className={`reference-tab ${tab === view ? "active" : ""}`} onClick={() => selectTab(view)}>{view[0].toUpperCase() + view.slice(1)}</button>)}</nav><div className="reference-tools"><label className="search-wrap"><span aria-hidden="true">⌕</span><input className="reference-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search username or display name" aria-label="Search username or display name" /></label><div className="sort-wrap"><button className="reference-sort" onClick={() => setSortOpen(!sortOpen)} aria-expanded={sortOpen} aria-haspopup="dialog">⇅ Sort</button>{sortOpen && <div className="sort-panel" role="dialog" aria-label="Sort by"><h3>Sort by</h3>{sortOptions.map((option) => <label key={option.id} className="sort-option"><input type="radio" name="sort" checked={sort === option.id} onChange={() => { setSort(option.id); setSortOpen(false); }} />{option.label}</label>)}</div>}</div></div><div className="tab-slot">{tab === "circles" ? <div className="filter-row">{circles.map((circle) => <button key={circle.id} className={`filter ${active.includes(circle.id) ? "selected" : ""}`} onClick={() => toggleCircle(circle.id)}>{circle.name}</button>)}</div> : <span aria-hidden="true" />}</div><div className="selection-bar"><label><input type="checkbox" checked={allShownSelected} ref={(input) => { if (input) input.indeterminate = someShownSelected; }} onChange={(event) => toggleAllShown(event.target.checked)} aria-label="Select all visible accounts" />Select all</label><span className="selection-count">{selected.size} selected</span><div className="bulk-actions"><button onClick={bulkUnfollow} disabled={!selected.size}>Bulk Unfollow</button><button onClick={bulkFollow} disabled={!selected.size}>Bulk Follow</button></div></div><div className="reference-list">{shown.map((person) => renderRow(person))}</div><section className="suggested-section"><h3>Suggested users</h3><div className="reference-list">{suggestions.map((person) => renderRow(person, true))}</div></section></div>
-    {circleEditor && <dialog open className="modal" aria-modal="true"><div className="modal-form"><button className="close" onClick={() => setCircleEditor(null)} aria-label="Close circle manager">×</button><p className="eyebrow">CIRCLE MANAGER</p><h2>{circleEditor.ids.length} selected {circleEditor.ids.length === 1 ? "person" : "people"}</h2>{circleEditor.error && <p id="capacity-error" className="capacity-error" role="alert">{circles.find((circle) => circle.id === circleEditor.error.id).name} has {circleEditor.error.current} / {CIRCLE_LIMIT} members. This change would make it {circleEditor.error.proposed} / {CIRCLE_LIMIT}; remove at least {circleEditor.error.needed} member{circleEditor.error.needed === 1 ? "" : "s"} before saving.</p>}{circles.map((circle) => { const states = circleEditor.ids.map((id) => circleEditor.draft[id].includes(circle.id)); const checked = states.every(Boolean); const mixed = states.some(Boolean) && !checked; return <label className={`manage-row ${circleEditor.error?.id === circle.id ? "capacity-invalid" : ""}`} key={circle.id}><span><input type="checkbox" checked={checked} ref={(input) => { if (input) input.indeterminate = mixed; }} onChange={(event) => toggleEditorCircle(circle.id, event.target.checked)} aria-describedby={circleEditor.error?.id === circle.id ? "capacity-error" : undefined} />{circle.name}</span><small>{memberCounts[circle.id] || 0} / {CIRCLE_LIMIT} members</small></label>; })}<div className="dialog-actions"><button className="secondary" onClick={() => setCircleEditor(null)}>Cancel</button><button className="primary" onClick={saveCircleEditor}>Save Changes</button></div></div></dialog>}
-    {viewing && <dialog open className="modal" aria-modal="true"><div className="modal-form"><button className="close" onClick={() => setViewing(null)} aria-label="Close post views">×</button><p className="eyebrow">YOUR PRIVATE VIEW</p><h2>Post Views</h2><p className="dialog-copy">Choose what you see from <strong>{viewing.ids.length} selected {viewing.ids.length === 1 ? "person" : "people"}</strong>. This does not change who can see your posts.</p><div className="view-options">{viewTypes.map((type) => <label key={type}><input type="checkbox" checked={viewDraft.includes(type)} onChange={(event) => setViewDraft(event.target.checked ? [...viewDraft, type] : viewDraft.filter((value) => value !== type))} />{type}</label>)}</div><div className="dialog-actions"><button className="secondary" onClick={() => setViewing(null)}>Cancel</button><button className="primary" onClick={saveViewEditor}>Save Changes</button></div></div></dialog>}
-    {relationshipDialog && <dialog open className="modal" aria-modal="true"><div className="modal-form"><button className="close" onClick={() => setRelationshipDialog(null)} aria-label="Close unfollow confirmation">×</button><p className="eyebrow">RELATIONSHIP CHANGE</p><h2>Unfollow {relationshipDialog.ids.length} {relationshipDialog.ids.length === 1 ? "person" : "people"}?</h2><p className="dialog-copy">This removes the host's follow relationship. It does not remove any account from the host's followers.</p><div className="dialog-actions"><button className="secondary" onClick={() => setRelationshipDialog(null)}>Cancel</button><button className="primary" onClick={confirmUnfollow}>Unfollow</button></div></div></dialog>}
-  </main>;
+  return <Dashboard people={workspace.people} circles={workspace.circles} user={session.user} onReload={refreshWorkspace} onSignOut={signOut} />;
 }

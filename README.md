@@ -47,6 +47,12 @@ npm install
 npm run dev
 ```
 
+### Supabase setup
+
+Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to your Supabase project URL and publishable key. `.env.local` is ignored by Git. Never put a Supabase secret/service key in a `VITE_` variable.
+
+Run [`supabase/migrations/20260924000000_initial_schema.sql`](supabase/migrations/20260924000000_initial_schema.sql) in the Supabase Dashboard SQL Editor to create the profile, people, circles, and circle-membership tables with row-level security policies. These policies scope reads and writes to the signed-in user and enforce the 20-person circle limit. In Supabase Authentication URL Configuration, allow `http://127.0.0.1:5173/**` for local email confirmation redirects (also add `http://localhost:5173/**` if you use that hostname). The app includes email sign-up/sign-in and stores people, circles, circle membership, and saved relationship flags in Supabase. New sign-ups may need to confirm their email before signing in.
+
 Create a production build with:
 
 ```bash
@@ -55,18 +61,16 @@ npm run build
 
 ## Prototype behavior
 
-The current screen includes Circles, Following, and Followers tabs; tab-scoped select-all with an adjacent selected count; circle filtering below the search bar; search with a magnifying-glass affordance; a dark single-choice sorting panel; dark/light theme switching; more than 30 synthetic accounts; Suggested Users; local circle membership editing; saved Post Views and Circle Manager dialogs; batch relationship actions; and a reference-style messaging view. When accounts are selected, View, Circle, Follow, Follow Back, and Unfollow target that selection; otherwise they target the clicked account. Successful account actions clear selection, while Cancel and a rejected Circle-capacity save preserve selection and its dialog draft for correction. Circle filters are self-contained and remain separate from selection. Circle editing displays each Circle's live `members / 20` occupancy and rejects an entire change that would exceed the free 20-member capacity. Sorting uses explicit demo relationship dates and applies to the current tab’s filtered/search results. The dialogs center over a blocking backdrop and require Cancel or Save Changes. The checked-in JPEGs in `public/assets/` are retained as visual design references, not rendered as the application UI.
+The current screen includes Circles, Following, and Followers tabs; tab-scoped selection; search, filters, and sorting; dark/light theme switching; signed-in user data; person and circle creation; saved circle membership; and batch relationship actions. Circle edits display live `members / 20` occupancy, with the limit checked in both the UI and database. The relationship actions only update saved app data; they do not follow or unfollow anyone on Instagram. Post Views and messaging remain local prototype views. The checked-in JPEGs in `public/assets/` are retained as visual design references, not rendered as the application UI.
 
 ## Known limitations
 
-This is a front-end prototype, not a connected product:
+This remains a prototype rather than a connected social product:
 
-- People, circles, relationships, profile counts, capacity rules, and colors are hard-coded demo data.
-- Prototype people and circles remain in React memory and are lost on refresh; there is no database or persistence.
-- The plus/manage control, action history, hidden-circle workflows, circle creation/deletion, paid capacity expansions, confirmed follow/unfollow persistence, and real message delivery are not implemented.
-- Sort dates and relationship flags are demo data; there is no connected account or feed service.
-- Selection, Post Views, and messaging are session-only local prototype behavior. Relationship row actions remain demo-only.
-- The UI has not yet been integrated with a real social platform or validated against production accessibility, content, and responsive requirements.
+- People, circles, memberships, and saved relationship flags are private per-user Supabase data. Relationship flags do not reflect or change a real Instagram account.
+- Post Views and messaging remain session-only. Real message delivery, feeds, Instagram import/sync, action history, hidden-circle workflows, circle deletion, and paid capacity expansions are not implemented.
+- Supabase authentication and database policies require the migration to be applied to the configured project. The hosted database migration has not been applied by this repository.
+- The interface has not yet been validated against production accessibility, content, and responsive requirements.
 
 ## Repository organization
 
