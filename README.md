@@ -51,7 +51,7 @@ npm run dev
 
 Create a local `.env.local` file and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` to your Supabase project URL and publishable key. `.env.local` is ignored by Git. `VITE_SUPABASE_ANON_KEY` remains supported for existing local setups. Never put a Supabase secret/service key in a `VITE_` variable.
 
-Run [`supabase/migrations/20260924000000_initial_schema.sql`](supabase/migrations/20260924000000_initial_schema.sql) in the Supabase Dashboard SQL Editor to create the profile, people, circles, and circle-membership tables with row-level security policies. These policies scope reads and writes to the signed-in user and enforce the 20-person circle limit. In Supabase Authentication URL Configuration, allow `http://127.0.0.1:5173/**` for local email confirmation redirects (also add `http://localhost:5173/**` if you use that hostname). The app includes email sign-up/sign-in and stores people, circles, circle membership, and saved relationship flags in Supabase. New sign-ups may need to confirm their email before signing in.
+Run [`supabase/migrations/20260924000000_initial_schema.sql`](supabase/migrations/20260924000000_initial_schema.sql), then [`supabase/migrations/20260925033759_expand_prototype_social_state.sql`](supabase/migrations/20260925033759_expand_prototype_social_state.sql), then [`supabase/migrations/20260925041408_enforce_free_circle_limit.sql`](supabase/migrations/20260925041408_enforce_free_circle_limit.sql), in the Supabase Dashboard SQL Editor. Together they create the private profile, people, circle, relationship, synthetic-follow, and message tables with row-level security policies. These policies scope reads and writes to the signed-in user and enforce the 10-circle free-plan and 20-person circle limits. In Supabase Authentication URL Configuration, allow `http://127.0.0.1:5173/**` for local email confirmation redirects (also add `http://localhost:5173/**` if you use that hostname). The app includes email sign-up/sign-in and stores people, circles, memberships, prototype relationship flags, notification preferences, Favorites, and sent messages in Supabase. New sign-ups may need to confirm their email before signing in.
 
 Create a production build with:
 
@@ -61,14 +61,14 @@ npm run build
 
 ## Prototype behavior
 
-The current screen includes Circles, Following, and Followers tabs; tab-scoped selection; search, filters, and sorting; dark/light theme switching; signed-in user data; person and circle creation; saved circle membership; and batch relationship actions. Circle edits display live `members / 20` occupancy, with the limit checked in both the UI and database. The relationship actions only update saved app data; they do not follow or unfollow anyone on Instagram. Post Views and messaging remain local prototype views. The checked-in JPEGs in `public/assets/` are retained as visual design references, not rendered as the application UI.
+The current screen includes Circles, Following, and Followers tabs; tab-scoped selection; search, filters, and sorting; dark/light theme switching; saved circles; notification preferences; private follow requests; a Favorites route; a Blocked list; and persisted prototype messages. Each account receives a private, deterministic 132-person synthetic directory with varied follower/following counts, 46 verified profiles, pending requests, and seeded mutual-follow relationships. Suggested Users shows 10 accounts and opens a paginated See all view that incrementally loads additional suggestions. Follow and Follow Back update the private Following list; adding a Favorite follows that account and puts it in Favorites, while removing it from Favorites does not unfollow it. Circle edits display live `members / 20` occupancy, with the limit checked in both the UI and database. The relationship actions only update saved app data; they do not follow, block, notify, or message anyone on Instagram. The checked-in JPEGs in `public/assets/` are retained as visual design references, not rendered as the application UI.
 
 ## Known limitations
 
 This remains a prototype rather than a connected social product:
 
 - People, circles, memberships, and saved relationship flags are private per-user Supabase data. Relationship flags do not reflect or change a real Instagram account.
-- Post Views and messaging remain session-only. Real message delivery, feeds, Instagram import/sync, action history, hidden-circle workflows, circle deletion, and paid capacity expansions are not implemented.
+- Notification preferences and sent prototype messages persist only for the signed-in host’s private demo data. They never deliver notifications or messages to a real account. Real message delivery, feeds, Instagram import/sync, action history, hidden-circle workflows, circle deletion, and paid capacity expansions are not implemented.
 - Supabase authentication and database policies require the migration to be applied to the configured project. The hosted database migration has not been applied by this repository.
 - The interface has not yet been validated against production accessibility, content, and responsive requirements.
 
