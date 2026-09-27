@@ -4,6 +4,15 @@
 
 - Updated the profile layout to replace profile and friends-list photos with generic SVG avatar placeholders, and replaced specific mutual names with generic followed-by text.
 
+## Push verified — `Family-Mo` at `e51a2da`
+
+- Verification timestamp: `2026-09-27T13:53:06-04:00`. The push command confirmed the remote update; this is the verification time, not an independently measured server-side push timestamp.
+- Previous remote commit: `c92fa38779b24f40d1eb1b152ef152511a5a290e`.
+- Resulting remote commit: `e51a2da` (`refactor: use generic profile and friend avatars`).
+- Pushed range: `c92fa38..e51a2da`, including the latest `origin/main` changes and the Family-Mo avatar update.
+- Updated `src/Dashboard.jsx`, `src/consistency.css`, and `src/styles.css` to use generic SVG silhouettes and followed-by copy. Owner-managed account names and handles remain visible in relationship lists so search and organization continue to work.
+- Updated this team reference. `git diff --check` passed before the feature commit; no build or tests were run.
+
 ## Purpose
 
 Shared collaboration notes for Family-Circles. Keep this file useful to every
