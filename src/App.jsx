@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Dashboard from "./Dashboard.jsx";
-import { loadFamilyData } from "./lib/familyData.js";
+import { ensureProfileAvatar, loadFamilyData } from "./lib/familyData.js";
 import { supabase } from "./lib/supabase.js";
 
 function AuthForm() {
@@ -8,6 +8,7 @@ function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [pronouns, setPronouns] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -23,7 +24,7 @@ function AuthForm() {
           email: email.trim(),
           password,
           options: {
-            data: { display_name: displayName.trim() },
+            data: { display_name: displayName.trim(), pronouns: pronouns.trim() },
             emailRedirectTo: window.location.origin,
           },
         });
@@ -44,7 +45,7 @@ function AuthForm() {
     <div className="brand"><span className="brand-mark">◎</span>circles</div>
     <h1>{mode === "signup" ? "Create your account" : "Welcome back"}</h1>
     <p className="auth-intro">Sign in to keep your circles and people saved to your account.</p>
-    {mode === "signup" && <label className="auth-field">Display name<input autoComplete="name" maxLength={80} value={displayName} onChange={(event) => setDisplayName(event.target.value)} required /></label>}
+    {mode === "signup" && <><label className="auth-field">Display name<input autoComplete="name" maxLength={80} value={displayName} onChange={(event) => setDisplayName(event.target.value)} required /></label><label className="auth-field">Pronouns (optional)<input maxLength={40} value={pronouns} onChange={(event) => setPronouns(event.target.value)} placeholder="e.g. they/them" /></label></>}
     <label className="auth-field">Email<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
     <label className="auth-field">Password<input type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={mode === "signup" ? 8 : undefined} value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
     {error && <p className="auth-error" role="alert">{error}</p>}
@@ -57,7 +58,7 @@ function AuthForm() {
 export default function App() {
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [workspace, setWorkspace] = useState({ people: [], circles: [] });
+  const [workspace, setWorkspace] = useState({ people: [], circles: [], profile: null });
   const [dataLoading, setDataLoading] = useState(false);
   const [dataError, setDataError] = useState("");
   const [retryIndex, setRetryIndex] = useState(0);
@@ -89,7 +90,7 @@ export default function App() {
 
   useEffect(() => {
     if (!session?.user) {
-      setWorkspace({ people: [], circles: [] });
+      setWorkspace({ people: [], circles: [], profile: null });
       setDataLoading(false);
       return undefined;
     }
@@ -99,9 +100,12 @@ export default function App() {
       setDataError("");
       try {
         const user = session.user;
-        const displayName = user.user_metadata?.display_name || user.email?.split("@")[0] || "Circles user";
-        const { error: profileError } = await supabase.from("profiles").upsert({ id: user.id, display_name: displayName }, { onConflict: "id" });
+        const displayName = user.user_metadata?.display_name || "Circles user";
+        const profile = { id: user.id, display_name: displayName };
+        if (user.user_metadata?.pronouns) profile.pronouns = user.user_metadata.pronouns;
+        const { error: profileError } = await supabase.from("profiles").upsert(profile, { onConflict: "id" });
         if (profileError) throw profileError;
+        await ensureProfileAvatar(user.id);
         const nextWorkspace = await loadFamilyData();
         if (active) setWorkspace(nextWorkspace);
       } catch (loadError) {
@@ -124,5 +128,5 @@ export default function App() {
   if (dataLoading) return <main className="auth-shell"><p className="auth-loading">Loading your circles…</p></main>;
   if (dataError) return <main className="auth-shell"><section className="auth-card"><div className="brand"><span className="brand-mark">◎</span>circles</div><h1>Couldn’t load your data</h1><p className="auth-error" role="alert">{dataError}</p><p className="auth-intro">Confirm that you ran the Supabase migration and that this project’s Row Level Security policies are enabled.</p><div className="auth-actions"><button className="primary" onClick={() => setRetryIndex((value) => value + 1)}>Retry</button><button className="secondary" onClick={signOut}>Sign out</button></div></section></main>;
 
-  return <Dashboard people={workspace.people} circles={workspace.circles} user={session.user} onReload={refreshWorkspace} onSignOut={signOut} />;
+  return <Dashboard people={workspace.people} circles={workspace.circles} user={session.user} profile={workspace.profile} onReload={refreshWorkspace} onSignOut={signOut} />;
 }
