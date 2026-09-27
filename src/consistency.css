@@ -1,4 +1,5 @@
-.person-avatar img{display:block;width:100%;height:100%;border-radius:inherit;object-fit:cover}
+.person-avatar{background:var(--soft);color:var(--muted)}
+.avatar-placeholder-icon{display:block;width:58%;height:58%}
 .reference-profile>.person-avatar{width:74px;height:74px;flex:0 0 74px;margin:0}
 .host-pronouns{margin-left:8px;color:var(--muted);font-size:.7em;font-weight:500;letter-spacing:0}
 .edit-pronouns{display:block;margin-top:5px;border:0;background:transparent;color:var(--accent);padding:0;font-size:11px;text-align:left}
@@ -31,7 +32,7 @@
 .bottom-nav button>span.nav-icon svg{display:block;width:100%;height:100%}
 .bottom-nav button .nav-icon-search{width:25px;height:25px}
 .bottom-nav button.active{color:var(--accent);font-weight:800}
-.profile-nav-fallback,.bottom-nav .person-avatar{display:block;width:23px;height:23px;margin:0;border-radius:50%;object-fit:cover}
+.bottom-nav .person-avatar{display:grid;width:23px;height:23px;margin:0;border-radius:50%;place-items:center}
 .bottom-nav .person-avatar{grid-column:auto;grid-row:auto;font-size:10px}
 .story-avatar-button{position:relative;display:grid;place-items:center;flex:0 0 88px;width:88px;height:88px;padding:4px;border:0;border-radius:50%;background:transparent;cursor:pointer}
 .story-avatar-button>.person-avatar{width:100%;height:100%;font-size:24px}

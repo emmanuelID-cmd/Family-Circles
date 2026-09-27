@@ -1,5 +1,9 @@
 # Team Reference
 
+## Family-Mo update
+
+- Updated the profile layout to replace profile and friends-list photos with generic SVG avatar placeholders, and replaced specific mutual names with generic followed-by text.
+
 ## Purpose
 
 Shared collaboration notes for Family-Circles. Keep this file useful to every
