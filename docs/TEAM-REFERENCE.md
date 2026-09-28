@@ -3,6 +3,7 @@
 ## Family-Mo update
 
 - Updated the profile layout to replace profile and friends-list photos with generic SVG avatar placeholders, and replaced specific mutual names with generic followed-by text.
+- Added a standalone visited-user profile page with a dedicated route, generic avatar placeholders, profile stats, bio, Follow/Message actions, and back navigation. `src/Dashboard.jsx` remains untouched.
 
 ## Push verified — `Family-Mo` at `e51a2da`
 
