@@ -10,36 +10,53 @@ what was pushed since the previously recorded baseline.
 ## Current verified baseline
 
 - Active branch: `Family-Manny`
-- Local `HEAD` and `origin/Family-Manny`:
-  `8a60ab2e23b4b52a509df8df2e72895c09334c6e`
-- `main` and `origin/main`:
-  `9cc6de76b1f33d5f95747c470b3a68eaa1b4955f`
-- The local and remote branch pointers were checked after `git fetch origin`;
-  this verifies commit synchronization, not the time of the push event.
-- Local commits `b63aa78` and `7889401` add the supplied profile/navigation
-  references and integrate the approved profile, search, and identity work.
-  They are not pushed and are not part of either remote baseline above.
-- Keep the separate local workspace file untracked. Do not treat these local
-  commits as pushed; append a timestamped entry only after a verified push.
+- The last verified published baseline is `b07dce82732f9d3fbde3345caa1721cd27c06212` on local `main`, `origin/main`, and `origin/Family-Manny`.
+- Local `Family-Manny` has advanced beyond that baseline with unpushed work, including managed-profile feature commit `4c3f456`.
+- PR #3 is merged. The branch was rebuilt as a linear history preserving the
+  three distinct feature commits; its file tree matched the pre-rebuild tree
+  exactly (`08cc1b2de36bf173b42b43afb42785dac9192124`).
+- Local recovery ref `recovery/Family-Manny-before-linear` retains the prior
+  tip `9c34ea39394b4692f0de7c457c3bee29a113e1fa`.
+- `Family-Circles.code-workspace` remains an intentionally untracked local
+  workspace file.
+- The local, ignored `docs/TEAM-REFERENCE-CHANGE.md` retains the detailed
+  teammate handoff from baseline `c92fa38779b24f40d1eb1b152ef152511a5a290e`;
+  preserve its local-only tracking policy.
 
 # Date and Timestamp of Push
 
-## Push timestamp unverified — `main` baseline `9cc6de7`
+## 2026-09-27T03:58:42-04:00
 
-- The remote push time for this baseline was not independently verified.
-- The branch is synchronized with `origin/main` at the recorded commit.
-- The local `docs/TEAM-REFERENCE-CHANGE.md` contains a detailed handoff from
-  teammate baseline `c92fa38779b24f40d1eb1b152ef152511a5a290e` through this
-  baseline. It is intentionally ignored by Git; preserve that local-only
-  tracking behavior.
-- No newer push is recorded here. Do not infer a push from uncommitted work.
+- `Family-Manny`: `8a60ab2` → `9c34ea3` (`8a60ab2..9c34ea3`). Published the
+  profile/navigation references and implementation plus the initial ancestry
+  integration; this opened PR #3. GitHub push-event metadata verified the
+  timestamp.
 
-## Push timestamp unverified — `Family-Manny` baseline `8a60ab2`
+## 2026-09-27T04:17:56-04:00
 
-- The fetched `origin/Family-Manny` branch points to `8a60ab2`.
-- The push event timestamp was not independently verified; do not substitute
-  the commit timestamp.
-- No newer push is recorded here. Do not infer a push from uncommitted work.
+- `Family-Manny`: `9c34ea3` → `6fb869a`. Replaced the merge-containing history
+  with three linear feature commits while preserving the exact file tree.
+  Production build, focused search-parser check, and whitespace check passed;
+  GitHub push-event metadata verified the timestamp.
+
+## 2026-09-27T04:20:11-04:00
+
+- `main`: `9cc6de7` → `b07dce8` through merged PR #3 after all PR checks passed.
+  GitHub push-event metadata verified the timestamp.
+
+## 2026-09-27T04:21:11-04:00
+
+- `Family-Manny`: `6fb869a` → `b07dce8`, aligned to the merged `main` tip.
+  Both local and remote branch refs now resolve to the same commit. GitHub
+  push-event metadata verified the timestamp.
+
+### Superseded baseline notes retained from the earlier handoff
+
+- The previous handoff recorded the `main` baseline `9cc6de7` and
+  `Family-Manny` baseline `8a60ab2` with push timestamps unverified. The
+  current verified baseline and subsequent dated push records above supersede
+  those status notes; the original event-time uncertainty is retained here
+  rather than silently rewriting the earlier record.
 
 ## Entry format for future pushes
 
