@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import Dashboard from "./Dashboard.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
 import { ensureProfileAvatar, loadFamilyData } from "./lib/familyData.js";
 import { supabase } from "./lib/supabase.js";
+
+function getUserProfileRoute() {
+  const match = window.location.hash.match(/^#\/user\/([^/?]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
 
 function AuthForm() {
   const [mode, setMode] = useState("signin");
@@ -57,11 +63,18 @@ function AuthForm() {
 
 export default function App() {
   const [session, setSession] = useState(null);
+  const [userProfileUsername, setUserProfileUsername] = useState(getUserProfileRoute);
   const [authLoading, setAuthLoading] = useState(true);
   const [workspace, setWorkspace] = useState({ people: [], circles: [], profile: null });
   const [dataLoading, setDataLoading] = useState(false);
   const [dataError, setDataError] = useState("");
   const [retryIndex, setRetryIndex] = useState(0);
+
+  useEffect(() => {
+    const syncProfileRoute = () => setUserProfileUsername(getUserProfileRoute());
+    window.addEventListener("hashchange", syncProfileRoute);
+    return () => window.removeEventListener("hashchange", syncProfileRoute);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -127,6 +140,26 @@ export default function App() {
   if (!session) return <AuthForm />;
   if (dataLoading) return <main className="auth-shell"><p className="auth-loading">Loading your circles…</p></main>;
   if (dataError) return <main className="auth-shell"><section className="auth-card"><div className="brand"><span className="brand-mark">◎</span>circles</div><h1>Couldn’t load your data</h1><p className="auth-error" role="alert">{dataError}</p><p className="auth-intro">Confirm that you ran the Supabase migration and that this project’s Row Level Security policies are enabled.</p><div className="auth-actions"><button className="primary" onClick={() => setRetryIndex((value) => value + 1)}>Retry</button><button className="secondary" onClick={signOut}>Sign out</button></div></section></main>;
+
+  if (userProfileUsername) {
+    const person = workspace.people.find((item) => item.username.toLowerCase() === userProfileUsername.toLowerCase());
+    const profile = person ? {
+      username: person.username,
+      name: person.name,
+      posts: person.posts,
+      followers: person.followers,
+      followingCount: person.following,
+      bio: person.bio,
+    } : {
+      username: userProfileUsername,
+      name: userProfileUsername === "marko.was" ? "Marko Was" : "User profile",
+      posts: userProfileUsername === "marko.was" ? "250" : "0",
+      followers: userProfileUsername === "marko.was" ? "683" : "0",
+      followingCount: userProfileUsername === "marko.was" ? "1,062" : "0",
+      bio: userProfileUsername === "marko.was" ? "Fashion. AI models. Infinite looks." : "Profile preview",
+    };
+    return <UserProfile profile={profile} onBack={() => { window.location.hash = "/"; }} />;
+  }
 
   return <Dashboard people={workspace.people} circles={workspace.circles} user={session.user} profile={workspace.profile} onReload={refreshWorkspace} onSignOut={signOut} />;
 }

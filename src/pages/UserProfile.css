@@ -1,0 +1,34 @@
+.visited-profile-page{min-height:100vh;background:#090a0b;color:#f5f5f7;padding:0 18px 48px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.visited-profile-shell{width:min(100%,720px);margin:0 auto}
+.visited-profile-header{height:62px;display:grid;grid-template-columns:48px 1fr 48px;align-items:center;border-bottom:1px solid #292a2d}
+.visited-profile-header h1{margin:0;font-size:19px;font-weight:700;text-align:center}
+.visited-profile-back,.visited-profile-icon-button{display:grid;place-items:center;width:42px;height:42px;border:0;background:transparent;color:inherit}
+.visited-profile-back svg{width:25px;height:25px}
+.visited-profile-icon-button{font-size:25px;letter-spacing:2px}
+.visited-profile-summary{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:28px;padding:32px 20px 20px}
+.user-profile-avatar{display:grid;place-items:center;flex:none;width:42px;height:42px;border:1px solid #3a3b40;border-radius:50%;background:#202125;color:#bfc1c8}
+.user-profile-avatar svg{width:58%;height:58%}
+.visited-profile-main-avatar{width:136px;height:136px;border-color:#38393e;background:#17181a;color:#c2c4ca}
+.visited-profile-identity h2{margin:0 0 24px;font-size:19px;font-weight:600}
+.visited-profile-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;text-align:left}
+.visited-profile-stats span{display:grid;gap:3px;color:#d2d3d7;font-size:13px}
+.visited-profile-stats strong{color:#f5f5f7;font-size:17px}
+.visited-profile-bio{padding:0 20px 18px;color:#efeff1;font-size:14px;line-height:1.5}
+.visited-profile-bio p{margin:0}
+.visited-profile-mutuals{display:flex;align-items:center;gap:12px;margin-top:14px;color:#d1d2d7;font-size:13px}
+.visited-profile-mutual-avatars{display:flex;padding-left:8px}
+.visited-profile-mutual-avatars .user-profile-avatar{width:34px;height:34px;margin-left:-8px;border:2px solid #090a0b;background:#242529}
+.visited-profile-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 20px 24px}
+.visited-profile-actions button{height:45px;border:0;border-radius:9px;font:inherit;font-size:14px;font-weight:700}
+.visited-profile-follow{background:#4b5ee8;color:white}
+.visited-profile-follow.is-following{background:#282a2e;color:#e5e6ea}
+.visited-profile-message{background:#282a2e;color:#f5f5f7}
+.visited-profile-notice{margin:0 20px 16px;color:#c7c9d0;font-size:12px;text-align:center}
+.visited-profile-tabs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #292a2d;border-bottom:1px solid #292a2d}
+.visited-profile-tabs button{height:48px;border:0;border-bottom:2px solid transparent;background:transparent;color:#92949b;font:inherit;font-size:12px;font-weight:700;text-transform:uppercase}
+.visited-profile-tabs button.selected{border-bottom-color:#f5f5f7;color:#f5f5f7}
+.visited-profile-tabs button:disabled{cursor:default;opacity:.55}
+.visited-profile-empty{display:grid;justify-items:center;gap:12px;padding:70px 15px;color:#9b9da4;text-align:center}
+.visited-profile-empty>div{display:grid;place-items:center;width:54px;height:54px;border:1px solid #55575d;border-radius:50%;color:#f5f5f7;font-size:27px}
+.visited-profile-empty p{margin:0;font-size:13px}
+@media(max-width:520px){.visited-profile-page{padding:0 12px 32px}.visited-profile-summary{grid-template-columns:106px 1fr;gap:18px;padding:26px 8px 18px}.visited-profile-main-avatar{width:102px;height:102px}.visited-profile-identity h2{margin-bottom:18px;font-size:17px}.visited-profile-stats{gap:7px}.visited-profile-stats span{font-size:11px}.visited-profile-stats strong{font-size:15px}.visited-profile-bio{padding-right:8px;padding-left:8px}.visited-profile-actions{padding-right:8px;padding-left:8px}}
