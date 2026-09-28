@@ -38,7 +38,7 @@ function Verified({ person }) {
   return person.verified ? <span className="verified" role="img" aria-label="Verified account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.7l2.08 1.66 2.66-.18 1.31 2.32 2.45 1.05-.1 2.66 1.66 2.08-1.66 2.08.1 2.66-2.45 1.05-1.31 2.32-2.66-.18L12 22.3l-2.08-1.66-2.66.18-1.31-2.32-2.45-1.05.1-2.66-1.66-2.08 1.66-2.08-.1-2.66 2.45-1.05 1.31-2.32 2.66.18L12 1.7z" /><path className="verified-check" d="M10.18 15.87 6.94 12.63l1.48-1.48 1.76 1.76 5.42-5.42 1.48 1.48-6.9 6.9z" /></svg></span> : null;
 }
 
-export default function Dashboard({ people, circles, user, profile, onReload, onSignOut }) {
+export default function Dashboard({ people, circles, accounts, accountId, user, profile, onReload, onSignOut, onSelectAccount, onAddAccount }) {
   const [tab, setTab] = useState("circles");
   const [route, setRoute] = useState("profile");
   const [query, setQuery] = useState("");
@@ -51,7 +51,6 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
   const [messaging, setMessaging] = useState(null);
   const [messageRows, setMessageRows] = useState([]);
   const [messageDraft, setMessageDraft] = useState("");
-  const [light, setLight] = useState(false);
   const [sort, setSort] = useState("default");
   const [sortOpen, setSortOpen] = useState(false);
   const [circleFormOpen, setCircleFormOpen] = useState(false);
@@ -63,6 +62,15 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
   const [mockPage, setMockPage] = useState("");
   const [storyPerson, setStoryPerson] = useState(null);
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [accountFormOpen, setAccountFormOpen] = useState(false);
+  const [accountDisplayName, setAccountDisplayName] = useState("");
+  const [accountUsername, setAccountUsername] = useState("");
+  const [accountUsernameError, setAccountUsernameError] = useState("");
+  const [accountBusy, setAccountBusy] = useState(false);
+  const [accountMenuPosition, setAccountMenuPosition] = useState({ top: 0, right: 0 });
+  const accountMenuRef = useRef(null);
+  const accountSwitchButtonRef = useRef(null);
   const [pronounDraft, setPronounDraft] = useState("");
   const [searchHidden, setSearchHidden] = useState(false);
   const [circlesToRemove, setCirclesToRemove] = useState(new Set());
@@ -75,8 +83,20 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
   const [suggestionLoading, setSuggestionLoading] = useState(false);
   const sentinelRef = useRef(null);
   const lastScrollY = useRef(0);
+  useEffect(() => {
+    if (!accountMenuOpen) return undefined;
+    accountMenuRef.current?.querySelector("button")?.focus();
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setAccountMenuOpen(false);
+        accountSwitchButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [accountMenuOpen]);
   const hostName = profile?.display_name || user.user_metadata?.display_name || "Circles user";
-  const hostHandle = `@${user.user_metadata?.username || "circlesuser"}`;
+  const hostHandle = `@${profile?.username || user.user_metadata?.username || "circlesuser"}`;
   const hostAvatar = { id: user.id, name: hostName, handle: hostHandle, avatarUrl: profile?.avatar_url, color: "linear-gradient(135deg,#f77737,#e1306c,#833ab4)" };
 
   const followedPeople = people.filter((person) => person.hostFollows && !person.blocked);
@@ -120,7 +140,7 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
   const toggleAllShown = (checked) => setSelected((current) => { const next = new Set(current); visibleRows.forEach((person) => checked ? next.add(person.id) : next.delete(person.id)); return next; });
   const navigate = (nextRoute = null) => { setRoute(nextRoute); setMockPage(""); setStoryPerson(null); clearSelection(); setMoreFor(null); setNotificationMoreOpen(false); setQuery(""); };
   const navigateToTab = (nextTab) => { setTab(nextTab); navigate(); };
-  const openMockPage = (name) => { setMockPage(name); setRoute(null); clearSelection(); setMoreFor(null); setQuery(""); };
+  const openMockPage = (name) => { setMockPage(name); setRoute(null); setActionError(""); clearSelection(); setMoreFor(null); setQuery(""); };
   const showStory = (person) => setStoryPerson(person);
   const scrollToPosts = () => document.getElementById("profile-posts")?.scrollIntoView({ behavior: "smooth", block: "start" });
   const selectTab = (nextTab) => { setTab(nextTab); setRoute(null); clearSelection(); setMoreFor(null); };
@@ -128,7 +148,7 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
   const toggleCircleDelete = (id, checked) => setCircleDeleteIds((current) => { const next = new Set(current); checked ? next.add(id) : next.delete(id); return next; });
   const removeSelectedCircles = async () => {
     if (!circleDeleteIds.size) return;
-    if (await reloadAfter(() => deleteCircles([...circleDeleteIds]))) {
+    if (await reloadAfter(() => deleteCircles(accountId, [...circleDeleteIds]))) {
       setActive((current) => current.filter((id) => !circleDeleteIds.has(id)));
       setCircleDeleteOpen(false);
       setCircleDeleteIds(new Set());
@@ -136,7 +156,7 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
   };
   const savePronouns = async (event) => {
     event.preventDefault();
-    if (await reloadAfter(() => updateProfile(user.id, { pronouns: pronounDraft.trim() || null }))) setProfileEditorOpen(false);
+    if (await reloadAfter(() => updateProfile(accountId, { pronouns: pronounDraft.trim() || null }))) setProfileEditorOpen(false);
   };
 
   const removeSuggestions = (ids) => {
@@ -163,7 +183,7 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
       setCircleEditor({ ...circleEditor, error: { id: overflow.id, current, proposed: proposedCount, needed: proposedCount - CIRCLE_LIMIT } });
       return;
     }
-    if (await reloadAfter(() => replaceCircleMemberships(circleEditor.ids, circleEditor.draft, people))) setCircleEditor(null);
+    if (await reloadAfter(() => replaceCircleMemberships(accountId, circleEditor.ids, circleEditor.draft, people))) setCircleEditor(null);
   };
   const toggleEditorCircle = (circleId, checked) => setCircleEditor((editor) => ({ ...editor, error: null, draft: Object.fromEntries(editor.ids.map((id) => [id, checked ? [...new Set([...editor.draft[id], circleId])] : editor.draft[id].filter((item) => item !== circleId)])) }));
   const openNotificationEditor = (person, allFollowed = false) => {
@@ -176,18 +196,18 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
     setNotificationType(null);
   };
   const saveNotification = async () => {
-    if (await reloadAfter(() => updatePeople(viewing.ids, { notification_settings: viewing.preferences }))) setViewing(null);
+    if (await reloadAfter(() => updatePeople(accountId, viewing.ids, { notification_settings: viewing.preferences }))) setViewing(null);
   };
   const openMessage = async (person) => {
     clearSelection();
     setMessaging(person);
     setActionError("");
-    try { setMessageRows(await loadMessages(person.id)); } catch (error) { setActionError(error.message); }
+    try { setMessageRows(await loadMessages(accountId, person.id)); } catch (error) { setActionError(error.message); }
   };
   const submitMessage = async (event) => {
     event.preventDefault();
     try {
-      const message = await sendMessage(messaging.id, messageDraft);
+      const message = await sendMessage(accountId, messaging.id, messageDraft);
       setMessageRows((rows) => [...rows, message]);
       setMessageDraft("");
     } catch (error) { setActionError(error.message); }
@@ -196,17 +216,17 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
     setMoreFor(null);
     const ids = resolveTargets(person);
     const suggestionIds = route === "suggestions" ? ids : [];
-    if (action === "dismiss") return reloadAfter(() => updatePeople(ids, { suggestion_dismissed_at: new Date().toISOString() }), suggestionIds);
+    if (action === "dismiss") return reloadAfter(() => updatePeople(accountId, ids, { suggestion_dismissed_at: new Date().toISOString() }), suggestionIds);
     if (action === "block") return setRelationshipDialog({ ids, kind: "block", suggestionIds });
-    if (action === "favorite") return reloadAfter(() => setFavorites(ids, !person.favorite), suggestionIds);
+    if (action === "favorite") return reloadAfter(() => setFavorites(accountId, ids, !person.favorite), suggestionIds);
   };
   const confirmRelationship = async () => {
     const { ids, kind } = relationshipDialog;
     const success = kind === "unfollow"
-      ? await reloadAfter(() => updateFollowing(ids, false))
+      ? await reloadAfter(() => updateFollowing(accountId, ids, false))
       : kind === "block"
-        ? await reloadAfter(() => blockPeople(ids), relationshipDialog.suggestionIds || [])
-      : await reloadAfter(() => updatePeople(ids, { pending_follow_request: false, follows_host: true, followed_host: new Date().toISOString() }));
+        ? await reloadAfter(() => blockPeople(accountId, ids), relationshipDialog.suggestionIds || [])
+      : await reloadAfter(() => updatePeople(accountId, ids, { pending_follow_request: false, person_follows_account: true, followed_account_at: new Date().toISOString() }));
     if (success) setRelationshipDialog(null);
   };
   const actionFor = (person, suggested = false) => {
@@ -224,10 +244,10 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
     if (action === "Message") return openMessage(person);
     if (action === "Unfollow" || action === "Following") return setRelationshipDialog({ ids: resolveTargets(person), kind: "unfollow" });
     if (action === "Confirm") return setRelationshipDialog({ ids: resolveTargets(person), kind: "confirm" });
-    if (action === "Delete") return reloadAfter(() => updatePeople(resolveTargets(person), { pending_follow_request: false }));
-    if (action === "Unblock") return reloadAfter(() => updatePeople(resolveTargets(person), { is_blocked: false }));
+    if (action === "Delete") return reloadAfter(() => updatePeople(accountId, resolveTargets(person), { pending_follow_request: false }));
+    if (action === "Unblock") return reloadAfter(() => updatePeople(accountId, resolveTargets(person), { is_blocked: false }));
     const ids = resolveTargets(person);
-    return reloadAfter(() => updateFollowing(ids, true), route === "suggestions" ? ids : []);
+    return reloadAfter(() => updateFollowing(accountId, ids, true), route === "suggestions" ? ids : []);
   };
   const submitCircle = async (event) => {
     event.preventDefault();
@@ -241,7 +261,7 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
     }
     setCircleFormError("");
     try {
-      await createCircle(circleName);
+      await createCircle(accountId, circleName);
       await onReload();
       clearSelection();
       setCircleName("");
@@ -266,7 +286,7 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
       setCircleLimitReviewError(`Select exactly ${excessCircleCount} circle${excessCircleCount === 1 ? "" : "s"} to remove.`);
       return;
     }
-    if (await reloadAfter(() => deleteCircles([...circlesToRemove]))) {
+    if (await reloadAfter(() => deleteCircles(accountId, [...circlesToRemove]))) {
       setCircleLimitReview(false);
       setCircleFormOpen(false);
       setCircleFormError("");
@@ -288,21 +308,21 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
     let activeRequest = true;
     setSuggestionRows([]);
     setSuggestionLoading(true);
-    loadSuggestionsPage({ query, from: 0 }).then(({ rows, total }) => {
+    loadSuggestionsPage({ accountId, query, from: 0 }).then(({ rows, total }) => {
       if (activeRequest) { setSuggestionRows(rows); setSuggestionTotal(total); }
     }).catch((error) => activeRequest && setActionError(error.message)).finally(() => activeRequest && setSuggestionLoading(false));
     return () => { activeRequest = false; };
-  }, [route, query]);
+  }, [route, query, accountId]);
   useEffect(() => {
     if (route !== "suggestions" || !sentinelRef.current || suggestionRows.length >= suggestionTotal) return undefined;
     const observer = new IntersectionObserver((entries) => {
       if (!entries[0].isIntersecting || suggestionLoading) return;
       setSuggestionLoading(true);
-      loadSuggestionsPage({ query, from: suggestionRows.length }).then(({ rows }) => setSuggestionRows((current) => [...current, ...rows])).catch((error) => setActionError(error.message)).finally(() => setSuggestionLoading(false));
+      loadSuggestionsPage({ accountId, query, from: suggestionRows.length }).then(({ rows }) => setSuggestionRows((current) => [...current, ...rows])).catch((error) => setActionError(error.message)).finally(() => setSuggestionLoading(false));
     });
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [route, query, suggestionRows.length, suggestionTotal, suggestionLoading]);
+  }, [route, query, accountId, suggestionRows.length, suggestionTotal, suggestionLoading]);
 
   const renderRow = (person, suggested = false) => <article className={`reference-row ${tab === "circles" && !route ? "circle-row" : "relationship-row"} ${suggested ? "suggested-row" : ""}`} key={person.id}>
     <input className="check" type="checkbox" checked={selected.has(person.id)} onChange={(event) => toggleSelected(person.id, event.target.checked)} aria-label={`Select ${person.name}`} />
@@ -320,14 +340,34 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
   }
 
   const routeTitle = route === "suggestions" ? "Suggested users" : route === "requests" ? "Follow requests" : route === "favorites" ? "Favorites" : route === "blocked" ? "Blocked" : null;
-  const isDialogOpen = Boolean(circleEditor || viewing || notificationType || relationshipDialog || circleFormOpen || circleLimitReview || circleDeleteOpen || profileEditorOpen);
-  const isInteractionLocked = isDialogOpen || Boolean(moreFor);
+  const isDialogOpen = Boolean(circleEditor || viewing || notificationType || relationshipDialog || circleFormOpen || circleLimitReview || circleDeleteOpen || profileEditorOpen || accountFormOpen);
+  const isInteractionLocked = isDialogOpen || Boolean(moreFor || accountMenuOpen);
+  const submitManagedAccount = async (event) => {
+    event.preventDefault();
+    setAccountBusy(true);
+    setActionError("");
+    setAccountUsernameError("");
+    try {
+      await onAddAccount({ displayName: accountDisplayName, username: accountUsername });
+      setAccountFormOpen(false);
+      setAccountDisplayName("");
+      setAccountUsername("");
+      setRoute("profile");
+    } catch (error) {
+      if (error.code === "23505" || /managed_accounts.*username|username.*unique/i.test(error.message || "")) {
+        setAccountUsernameError("That username is already used by another profile under this login.");
+      } else {
+        setActionError(error.message || "Could not add this profile.");
+      }
+    } finally {
+      setAccountBusy(false);
+    }
+  };
   if (storyPerson) return <main className="story-view"><div className="story-canvas" role="button" tabIndex={0} aria-label={`Story from ${storyPerson.name}. Click anywhere to return.`} onClick={() => setStoryPerson(null)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setStoryPerson(null); } }}><div className="story-progress"><span /></div><div className="story-account"><PersonAvatar person={storyPerson} story /><span><strong>{storyPerson.name}</strong><small>{storyPerson.handle}</small></span><Verified person={storyPerson} /></div><p>Under mockup version this feature is not accessible.</p></div></main>;
-  return <main className={light ? "shell light" : "shell dark"}><div className={`reference-shell ${route === "profile" ? "profile-shell" : ""}`} inert={isInteractionLocked ? "" : undefined}>{route !== "profile" && !mockPage && <><header className="topbar"><div className="brand"><span className="brand-mark">◎</span>circles</div><button className="theme-toggle" onClick={() => setLight(!light)} aria-label="Toggle color theme">{light ? "☾" : "☼"}</button><button className="sign-out-btn" onClick={onSignOut}>Sign out</button></header>
-    <section className="reference-header"><div className="reference-profile"><PersonAvatar person={hostAvatar} /><div><h2>{hostName}{profile?.pronouns && <small className="host-pronouns">{profile.pronouns}</small>}</h2><p>{hostHandle}</p><div className="host-stats"><span><strong>{followers.length}</strong> Followers</span><span><strong>{followedPeople.length}</strong> Following</span></div></div></div><div className="header-actions"><button className="favorites-link" onClick={() => navigate("favorites")} aria-label="View favorites">★ Favorites</button><button className="manage-btn" onClick={() => { setCircleFormError(""); setCircleFormOpen(true); }} aria-label="Create a circle">＋ Circle</button><button className="manage-btn delete-circle-trigger" onClick={() => { setCircleDeleteIds(new Set()); setCircleDeleteOpen(true); }} aria-label="Delete circles">− Circle</button></div></section></>}
-    {route === "profile" && <section className="host-profile-page"><div className="host-profile-top"><button className="story-avatar-button" onClick={() => showStory(hostAvatar)} aria-label="Open your story"><PersonAvatar person={hostAvatar} story /></button><div><h1>{hostName}{profile?.pronouns && <small className="host-pronouns">{profile.pronouns}</small>}</h1><p>{hostHandle}</p><button className="edit-pronouns" onClick={() => { setPronounDraft(profile?.pronouns || ""); setProfileEditorOpen(true); }}>{profile?.pronouns ? "Edit pronouns" : "Add pronouns"}</button></div><button className="manage-btn" onClick={scrollToPosts}>＋ Post</button></div><div className="profile-stat-grid"><button onClick={scrollToPosts}><strong>0</strong><span>Posts</span></button><button onClick={() => navigateToTab("circles")}><strong>{circles.length}</strong><span>Circles</span></button><button onClick={() => navigateToTab("followers")}><strong>{followers.length}</strong><span>Followers</span></button><button onClick={() => navigateToTab("following")}><strong>{followedPeople.length}</strong><span>Following</span></button></div><div className="profile-post-empty" id="profile-posts"><div aria-hidden="true">▦</div><p>No posts are accessible under the mock version.</p></div></section>}
-    {mockPage && <section className="mock-navigation-page"><button className="mock-back" onClick={() => { setMockPage(""); navigate("profile"); }} aria-label="Back to Profile">←</button><h1>{mockPage}</h1><p>Under mockup version this feature is not accessible.</p><button className="secondary" onClick={() => navigate("profile")}>User Profile Page</button></section>}
-    {!mockPage && route !== "profile" && (route ? <div className="subpage-heading"><button onClick={() => navigate()} aria-label="Back to account views">←</button><h1>{routeTitle}</h1></div> : <nav className="reference-tabs sticky-tabs" inert={sortOpen ? "" : undefined} aria-label="Account views">{["circles", "following", "followers"].map((view) => <button key={view} className={`reference-tab ${tab === view ? "active" : ""}`} onClick={() => selectTab(view)}>{view[0].toUpperCase() + view.slice(1)}</button>)}</nav>)}
+  return <main className="shell"><div className={`reference-shell ${route === "profile" ? "profile-shell" : ""}`} inert={isInteractionLocked ? "" : undefined}>{route !== "profile" && !mockPage && <section className="reference-header"><div className="reference-account-row"><button className="account-back" onClick={() => navigate("profile")} aria-label="Back to profile">←</button><span className="account-handle">{hostHandle}</span><div className="header-actions"><button className="person-add-action" onClick={() => openMockPage("Discover People")} aria-label="Open Discover People"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20v-1.5a6.5 6.5 0 0 1 13 0V20M19 8v8M15 12h8"/></svg></button>{tab === "circles" && !route && <><button className="favorites-link" onClick={() => navigate("favorites")} aria-label="View favorites">★ Favorites</button><button className="manage-btn" onClick={() => { setCircleFormError(""); setCircleFormOpen(true); }} aria-label="Create a circle">＋ Circle</button><button className="manage-btn delete-circle-trigger" onClick={() => { setCircleDeleteIds(new Set()); setCircleDeleteOpen(true); }} aria-label="Delete circles">− Circle</button></>}</div></div></section>}
+    {route === "profile" && <section className="host-profile-page"><div className="host-profile-top"><button className="story-avatar-button" onClick={() => showStory(hostAvatar)} aria-label="Open your story"><PersonAvatar person={hostAvatar} story /></button><div><h1 className="host-name-line">{hostName}<button ref={accountSwitchButtonRef} className="account-switch-trigger" aria-label="Switch profile or add account" aria-expanded={accountMenuOpen} aria-haspopup="menu" onClick={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); setAccountMenuPosition({ top: bounds.bottom + 8, right: window.innerWidth - bounds.right }); setAccountMenuOpen((open) => !open); }}>⌄</button>{profile?.pronouns && <small className="host-pronouns">{profile.pronouns}</small>}</h1><p>{hostHandle}</p><button className="edit-pronouns" onClick={() => { setPronounDraft(profile?.pronouns || ""); setProfileEditorOpen(true); }}>{profile?.pronouns ? "Edit pronouns" : "Add pronouns"}</button></div><button className="manage-btn" onClick={scrollToPosts}>＋ Post</button></div><div className="profile-stat-grid"><button onClick={scrollToPosts}><strong>0</strong><span>Posts</span></button><button onClick={() => navigateToTab("circles")}><strong>{circles.length}</strong><span>Circles</span></button><button onClick={() => navigateToTab("followers")}><strong>{followers.length}</strong><span>Followers</span></button><button onClick={() => navigateToTab("following")}><strong>{followedPeople.length}</strong><span>Following</span></button></div><div className="profile-post-empty" id="profile-posts"><div aria-hidden="true">▦</div><p>No posts are accessible under the mock version.</p></div></section>}
+    {mockPage === "Discover People" ? <section className="discover-page"><div className="discover-page-heading"><button className="mock-back" onClick={() => { setMockPage(""); navigate(); }} aria-label="Back to account views">←</button><h1>Discover people</h1></div><label className="search-wrap discover-search"><span aria-hidden="true">⌕</span><input className="reference-search" placeholder="Search username or display name" aria-label="Search username or display name" /></label><div className="connect-contacts-row"><span className="contacts-icon" aria-hidden="true">▣</span><span><strong>Connect contacts</strong><small>No one</small></span><button className="connect-contacts-button" onClick={() => setActionError("Under mockup version this feature is not accessible.")}>Connect</button></div>{actionError && <p className="action-error" role="status">{actionError}</p>}</section> : mockPage && <section className="mock-navigation-page"><button className="mock-back" onClick={() => { setMockPage(""); navigate("profile"); }} aria-label="Back to Profile">←</button><h1>{mockPage}</h1><p>Under mockup version this feature is not accessible.</p><button className="secondary" onClick={() => navigate("profile")}>User Profile Page</button></section>}
+    {!mockPage && route !== "profile" && (route ? <div className="subpage-heading"><button onClick={() => navigate()} aria-label="Back to account views">←</button><h1>{routeTitle}</h1></div> : <nav className="reference-tabs sticky-tabs" inert={sortOpen ? "" : undefined} aria-label="Account views">{[{ id: "circles", label: "Circles", count: circles.length }, { id: "followers", label: "Followers", count: followers.length }, { id: "following", label: "Following", count: followedPeople.length }].map((view) => <button key={view.id} className={`reference-tab ${tab === view.id ? "active" : ""}`} onClick={() => selectTab(view.id)}><strong>{view.count}</strong> {view.label}</button>)}</nav>)}
     {!mockPage && route !== "profile" && <><div className={`reference-tools ${searchHidden ? "search-hidden" : ""}`}><label className="search-wrap"><span aria-hidden="true">⌕</span><input className="reference-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search names, @username, or @Circle:Name; separate with commas" aria-label="Search accounts and circles" /></label><div className="sort-wrap"><button className="reference-sort" onClick={() => setSortOpen(!sortOpen)} aria-expanded={sortOpen} aria-haspopup="dialog">⇅ Sort</button>{sortOpen && <div className="sort-panel" role="dialog" aria-label="Sort by"><h3>Sort by</h3>{[{ id: "default", label: "Default" }, { id: "latest", label: "Date followed: Latest" }, { id: "earliest", label: "Date followed: Earliest" }].map((option) => <label key={option.id} className="sort-option"><input type="radio" name="sort" checked={sort === option.id} onChange={() => { setSort(option.id); setSortOpen(false); }} />{option.label}</label>)}</div>}</div></div>
     <div className="tab-slot">{tab === "circles" && !route ? <div className="filter-row">{circles.map((circle) => <button key={circle.id} className={`filter ${(search.hasCircleTerms ? search.circleIds : active).includes(circle.id) ? "selected" : ""}`} onClick={() => toggleCircle(circle.id)}>{circle.name}</button>)}</div> : <span aria-hidden="true" />}</div>
     {actionError && <p className="action-error" role="alert">{actionError}</p>}
@@ -345,5 +385,7 @@ export default function Dashboard({ people, circles, user, profile, onReload, on
   <nav className="bottom-nav" inert={isInteractionLocked || sortOpen ? "" : undefined} aria-label="Main navigation">{["Home", "Reels", "Messages", "Search", "Profile"].map((name) => <button key={name} className={(route === "profile" && name === "Profile") || mockPage === name ? "active" : ""} onClick={() => name === "Profile" ? navigate("profile") : openMockPage(name)}>{name === "Profile" ? profile?.avatar_url ? <PersonAvatar person={hostAvatar} /> : <img className="profile-nav-fallback" src="/assets/ChatGPT%20Image%20Sep%2027%2C%202026%2C%2012_13_12%20AM.jpg" alt="" /> : <span className={`nav-icon nav-icon-${name.toLowerCase()}`}><NavigationIcon name={name} /></span>}{name}</button>)}</nav>
   {profileEditorOpen && <dialog open className="modal" aria-modal="true"><form className="modal-form" onSubmit={savePronouns}><button type="button" className="close" onClick={() => { setActionError(""); setProfileEditorOpen(false); }} aria-label="Close profile editor">×</button><p className="eyebrow">PROFILE</p><h2>Edit pronouns</h2>{actionError && <p className="action-error" role="alert">{actionError}</p>}<label className="auth-field">Pronouns<input autoFocus maxLength={40} value={pronounDraft} onChange={(event) => setPronounDraft(event.target.value)} placeholder="e.g. they/them" /></label><div className="dialog-actions"><button type="button" className="secondary" onClick={() => { setActionError(""); setProfileEditorOpen(false); }}>Cancel</button><button type="submit" className="primary">Save Changes</button></div></form></dialog>}
   {circleDeleteOpen && <dialog open className="modal" aria-modal="true"><div className="modal-form"><button className="close" onClick={() => { setActionError(""); setCircleDeleteOpen(false); }} aria-label="Close delete circles">×</button><p className="eyebrow">CIRCLE MANAGER</p><h2>Delete circles</h2><p className="dialog-copy">Deleting a circle also removes its memberships, but does not unfollow anyone. This cannot be undone.</p>{actionError && <p className="action-error" role="alert">{actionError}</p>}<div className="circle-removal-list">{circles.map((circle) => <label className="manage-row" key={circle.id}><span><input type="checkbox" checked={circleDeleteIds.has(circle.id)} onChange={(event) => toggleCircleDelete(circle.id, event.target.checked)} />{circle.name}</span><small>{memberCounts[circle.id] || 0} members</small></label>)}</div><p className="selection-count">{circleDeleteIds.size} selected</p><div className="dialog-actions"><button className="secondary" onClick={() => { setActionError(""); setCircleDeleteOpen(false); }}>Cancel</button><button className="primary danger" disabled={!circleDeleteIds.size} onClick={removeSelectedCircles}>Delete selected</button></div></div></dialog>}
+  {accountMenuOpen && <><button className="account-menu-scrim" aria-label="Close account menu" onClick={() => { setAccountMenuOpen(false); accountSwitchButtonRef.current?.focus(); }} /><div ref={accountMenuRef} className="account-menu" role="menu" aria-label="Switch profile" style={{ top: accountMenuPosition.top, right: accountMenuPosition.right }} onKeyDown={(event) => { if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return; const items = [...event.currentTarget.querySelectorAll('[role="menuitemradio"], [role="menuitem"]')]; const index = items.indexOf(document.activeElement); const next = event.key === "ArrowDown" ? (index + 1) % items.length : (index - 1 + items.length) % items.length; event.preventDefault(); items[next]?.focus(); }}>{accounts.map((account) => <button key={account.id} role="menuitemradio" aria-checked={account.id === accountId} className={account.id === accountId ? "active-account" : ""} onClick={() => { setAccountMenuOpen(false); if (account.id !== accountId) onSelectAccount(account.id); }}><span>{account.display_name}</span><small>{account.username ? `@${account.username}` : "No username"}{account.id === accountId ? " · Current" : ""}</small></button>)}<button className="account-menu-add" role="menuitem" onClick={() => { setAccountMenuOpen(false); setActionError(""); setAccountUsernameError(""); setAccountFormOpen(true); }}>＋ Add account</button></div></>}
+  {accountFormOpen && <dialog open className="modal" aria-modal="true" aria-labelledby="managed-account-title"><form className="modal-form" onSubmit={submitManagedAccount}><button type="button" className="close" onClick={() => { setActionError(""); setAccountFormOpen(false); }} aria-label="Close add profile form">×</button><p className="eyebrow">LINKED PROFILE</p><h2 id="managed-account-title">Add account</h2><p className="dialog-copy">Create another profile under this login. Its follows, followers, circles, and messages start separately.</p>{actionError && <p className="action-error" role="alert">{actionError}</p>}<label className="auth-field">Display name<input autoFocus autoComplete="off" maxLength={80} value={accountDisplayName} onChange={(event) => setAccountDisplayName(event.target.value)} required aria-describedby="managed-name-help" /></label><small id="managed-name-help" className="field-help">Required · up to 80 characters</small><label className="auth-field">Username (optional)<input autoComplete="off" maxLength={30} pattern="[A-Za-z0-9._]{1,30}" value={accountUsername} onChange={(event) => { setAccountUsername(event.target.value); setAccountUsernameError(""); }} className={accountUsernameError ? "field-invalid" : undefined} placeholder="username" aria-describedby={accountUsernameError ? "managed-username-error" : "managed-username-help"} /></label>{accountUsernameError ? <small id="managed-username-error" className="field-error" role="alert">{accountUsernameError}</small> : <small id="managed-username-help" className="field-help">1–30 letters, numbers, periods, or underscores</small>}<div className="dialog-actions"><button type="button" className="secondary" onClick={() => { setActionError(""); setAccountUsernameError(""); setAccountFormOpen(false); }}>Cancel</button><button type="submit" className="primary" disabled={accountBusy}>{accountBusy ? "Creating…" : "Create profile"}</button></div></form></dialog>}
   </main>;
 }

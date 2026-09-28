@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Dashboard from "./Dashboard.jsx";
-import { ensureProfileAvatar, loadFamilyData } from "./lib/familyData.js";
+import { createManagedAccount, ensureProfileAvatar, loadFamilyData, loadManagedAccounts } from "./lib/familyData.js";
 import { supabase } from "./lib/supabase.js";
 
 function AuthForm() {
@@ -58,7 +58,8 @@ function AuthForm() {
 export default function App() {
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [workspace, setWorkspace] = useState({ people: [], circles: [], profile: null });
+  const [workspace, setWorkspace] = useState({ people: [], circles: [], profile: null, accounts: [] });
+  const [activeAccountId, setActiveAccountId] = useState(null);
   const [dataLoading, setDataLoading] = useState(false);
   const [dataError, setDataError] = useState("");
   const [retryIndex, setRetryIndex] = useState(0);
@@ -83,14 +84,16 @@ export default function App() {
   }, []);
 
   const refreshWorkspace = useCallback(async () => {
-    const nextWorkspace = await loadFamilyData();
-    setWorkspace(nextWorkspace);
+    if (!activeAccountId) return null;
+    const nextWorkspace = await loadFamilyData(activeAccountId);
+    setWorkspace((current) => ({ ...nextWorkspace, accounts: current.accounts }));
     return nextWorkspace;
-  }, []);
+  }, [activeAccountId]);
 
   useEffect(() => {
     if (!session?.user) {
-      setWorkspace({ people: [], circles: [], profile: null });
+      setWorkspace({ people: [], circles: [], profile: null, accounts: [] });
+      setActiveAccountId(null);
       setDataLoading(false);
       return undefined;
     }
@@ -106,8 +109,17 @@ export default function App() {
         const { error: profileError } = await supabase.from("profiles").upsert(profile, { onConflict: "id" });
         if (profileError) throw profileError;
         await ensureProfileAvatar(user.id);
-        const nextWorkspace = await loadFamilyData();
-        if (active) setWorkspace(nextWorkspace);
+        const accounts = await loadManagedAccounts();
+        const storageKey = `family-circles-active-account:${user.id}`;
+        const savedId = window.localStorage.getItem(storageKey);
+        const selected = accounts.find((account) => account.id === savedId) || accounts.find((account) => account.is_default) || accounts[0];
+        if (!selected) throw new Error("No managed profile is available for this login.");
+        const nextWorkspace = await loadFamilyData(selected.id);
+        if (active) {
+          window.localStorage.setItem(storageKey, selected.id);
+          setActiveAccountId(selected.id);
+          setWorkspace({ ...nextWorkspace, accounts });
+        }
       } catch (loadError) {
         if (active) setDataError(loadError.message || "Could not load your data.");
       } finally {
@@ -123,10 +135,37 @@ export default function App() {
     if (error) setDataError(error.message);
   };
 
+  const selectAccount = async (accountId) => {
+    if (accountId === activeAccountId) return;
+    if (!workspace.accounts.some((account) => account.id === accountId)) throw new Error("That profile is not available under this login.");
+    setDataLoading(true);
+    setDataError("");
+    try {
+      const nextWorkspace = await loadFamilyData(accountId);
+      window.localStorage.setItem(`family-circles-active-account:${session.user.id}`, accountId);
+      setActiveAccountId(accountId);
+      setWorkspace((current) => ({ ...nextWorkspace, accounts: current.accounts }));
+    } catch (error) {
+      setDataError(error.message || "Could not switch profiles.");
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const addAccount = async (details) => {
+    const account = await createManagedAccount(details);
+    setWorkspace((current) => ({ ...current, accounts: [...current.accounts, account] }));
+    const nextWorkspace = await loadFamilyData(account.id);
+    setWorkspace((current) => ({ ...nextWorkspace, accounts: current.accounts.some((item) => item.id === account.id) ? current.accounts : [...current.accounts, account] }));
+    window.localStorage.setItem(`family-circles-active-account:${session.user.id}`, account.id);
+    setActiveAccountId(account.id);
+    return account;
+  };
+
   if (authLoading) return <main className="auth-shell"><p className="auth-loading">Loading your session…</p></main>;
   if (!session) return <AuthForm />;
   if (dataLoading) return <main className="auth-shell"><p className="auth-loading">Loading your circles…</p></main>;
   if (dataError) return <main className="auth-shell"><section className="auth-card"><div className="brand"><span className="brand-mark">◎</span>circles</div><h1>Couldn’t load your data</h1><p className="auth-error" role="alert">{dataError}</p><p className="auth-intro">Confirm that you ran the Supabase migration and that this project’s Row Level Security policies are enabled.</p><div className="auth-actions"><button className="primary" onClick={() => setRetryIndex((value) => value + 1)}>Retry</button><button className="secondary" onClick={signOut}>Sign out</button></div></section></main>;
 
-  return <Dashboard people={workspace.people} circles={workspace.circles} user={session.user} profile={workspace.profile} onReload={refreshWorkspace} onSignOut={signOut} />;
+  return <Dashboard people={workspace.people} circles={workspace.circles} accounts={workspace.accounts} accountId={activeAccountId} user={session.user} profile={workspace.profile} onReload={refreshWorkspace} onSignOut={signOut} onSelectAccount={selectAccount} onAddAccount={addAccount} />;
 }

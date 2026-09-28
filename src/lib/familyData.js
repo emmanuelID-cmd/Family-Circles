@@ -64,7 +64,18 @@ const syntheticPeople = Array.from({ length: 132 }, (_, index) => {
   };
 });
 
-function toPerson(row, index, membershipRows, followingRows = []) {
+function toPerson(row, index, membershipRows, followingRows = [], accountState = null, useLegacyState = false) {
+  const state = accountState || (useLegacyState ? {
+    account_follows_person: row.host_follows,
+    person_follows_account: row.follows_host,
+    followed_by_account_at: row.followed_by_host,
+    followed_account_at: row.followed_host,
+    is_favorite: row.is_favorite,
+    is_blocked: row.is_blocked,
+    pending_follow_request: row.pending_follow_request,
+    suggestion_dismissed_at: row.suggestion_dismissed_at,
+    notification_settings: row.notification_settings,
+  } : {});
   return {
     id: row.id,
     name: row.display_name,
@@ -73,19 +84,19 @@ function toPerson(row, index, membershipRows, followingRows = []) {
     avatarUrl: row.avatar_url,
     circles: membershipRows.filter((membership) => membership.person_id === row.id).map((membership) => membership.circle_id),
     color: colors[index % colors.length],
-    followsHost: row.follows_host,
-    hostFollows: row.host_follows,
-    followedByHost: row.followed_by_host,
-    followedHost: row.followed_host,
+    followsHost: state.person_follows_account || false,
+    hostFollows: state.account_follows_person || false,
+    followedByHost: state.followed_by_account_at || null,
+    followedHost: state.followed_account_at || null,
     followers: row.follower_count.toLocaleString(),
     following: row.following_count.toLocaleString(),
     posts: row.post_count.toLocaleString(),
     verified: row.is_verified,
-    favorite: row.is_favorite,
-    blocked: row.is_blocked,
-    pendingRequest: row.pending_follow_request,
-    dismissedAt: row.suggestion_dismissed_at,
-    notifications: { ...notificationDefaults, ...(row.notification_settings || {}) },
+    favorite: state.is_favorite || false,
+    blocked: state.is_blocked || false,
+    pendingRequest: state.pending_follow_request || false,
+    dismissedAt: state.suggestion_dismissed_at || null,
+    notifications: { ...notificationDefaults, ...(state.notification_settings || {}) },
     follows: followingRows.filter((following) => following.person_id === row.id).map((following) => following.followed_person_id),
   };
 }
@@ -110,22 +121,44 @@ async function ensureSyntheticPeople() {
   }
 }
 
-export async function loadFamilyData() {
+export async function loadManagedAccounts() {
+  return unwrap(await supabase.from("managed_accounts").select("id, username, display_name, pronouns, avatar_url, is_default").order("created_at", { ascending: true }));
+}
+
+export async function createManagedAccount({ displayName: rawDisplayName, username: rawUsername }) {
+  const display_name = rawDisplayName.trim();
+  const cleanedUsername = rawUsername.trim().replace(/^@/, "").toLowerCase();
+  if (!display_name || display_name.length > 80) throw new Error("Enter a display name between 1 and 80 characters.");
+  if (cleanedUsername && !/^[a-z0-9._]{1,30}$/.test(cleanedUsername)) throw new Error("Use 1–30 letters, numbers, periods, or underscores for the username.");
+  const id = crypto.randomUUID();
+  return unwrap(await supabase.from("managed_accounts").insert({
+    id,
+    display_name,
+    username: cleanedUsername || null,
+    avatar_url: fictionalAvatar(id),
+  }).select("id, username, display_name, pronouns, avatar_url, is_default").single());
+}
+
+export async function loadFamilyData(accountId) {
+  if (!accountId) throw new Error("Choose an account profile to load.");
   await ensureSyntheticPeople();
   const [peopleResult, circlesResult, membershipsResult, followingResult] = await Promise.all([
     supabase.from("people").select("*").order("created_at", { ascending: true }),
-    supabase.from("circles").select("*").order("created_at", { ascending: true }),
-    supabase.from("circle_members").select("circle_id, person_id"),
+    supabase.from("circles").select("*").eq("account_id", accountId).order("created_at", { ascending: true }),
+    supabase.from("circle_members").select("circle_id, person_id").eq("account_id", accountId),
     supabase.from("person_followings").select("person_id, followed_person_id"),
   ]);
   const peopleRows = unwrap(peopleResult);
   const circleRows = unwrap(circlesResult);
   const membershipRows = unwrap(membershipsResult);
   const followingRows = unwrap(followingResult);
+  const accountRows = unwrap(await supabase.from("account_people").select("*").eq("account_id", accountId));
+  const accountByPerson = new Map(accountRows.map((row) => [row.person_id, row]));
+  const account = unwrap(await supabase.from("managed_accounts").select("id, username, display_name, pronouns, avatar_url, is_default").eq("id", accountId).single());
   return {
-    people: peopleRows.map((row, index) => toPerson(row, index, membershipRows, followingRows)),
+    people: peopleRows.map((row, index) => toPerson(row, index, membershipRows, followingRows, accountByPerson.get(row.id), account.is_default)),
     circles: circleRows.map(({ id, name }) => ({ id, name })),
-    profile: unwrap(await supabase.from("profiles").select("display_name, pronouns, avatar_url").single()),
+    profile: account,
   };
 }
 
@@ -137,14 +170,14 @@ export async function ensureProfileAvatar(userId) {
   return avatar_url;
 }
 
-export async function updateProfile(userId, updates) {
-  unwrap(await supabase.from("profiles").update(updates).eq("id", userId).select("id").single());
+export async function updateProfile(accountId, updates) {
+  unwrap(await supabase.from("managed_accounts").update(updates).eq("id", accountId).select("id").single());
 }
 
-export async function loadSuggestionsPage({ query = "", from = 0, size = 50 }) {
+export async function loadSuggestionsPage({ accountId, query = "", from = 0, size = 50 }) {
   const { personTerms, hasCircleTerms } = parseAccountSearch(query, []);
   if (hasCircleTerms) return { rows: [], total: 0 };
-  let request = supabase.from("people").select("*", { count: "exact" }).eq("host_follows", false).eq("is_blocked", false).is("suggestion_dismissed_at", null).eq("pending_follow_request", false).order("created_at", { ascending: true }).range(from, from + size - 1);
+  let request = supabase.from("people").select("*", { count: "exact" }).order("created_at", { ascending: true }).range(0, 999);
   const terms = personTerms.map((term) => {
     const exactHandle = term.startsWith("@");
     const value = term.replace(/^@/, "").toLowerCase().replace(/[^a-z0-9._ -]/g, "").slice(0, 80);
@@ -156,18 +189,26 @@ export async function loadSuggestionsPage({ query = "", from = 0, size = 50 }) {
   if (terms.length) request = request.or(terms.join(","));
   const result = await request;
   if (result.error) throw new Error(result.error.message);
-  return { rows: result.data.map((row, index) => toPerson(row, from + index, [], [])), total: result.count || 0 };
+  const peopleRows = result.data || [];
+  if (!peopleRows.length) return { rows: [], total: 0 };
+  const states = unwrap(await supabase.from("account_people").select("*").eq("account_id", accountId).in("person_id", peopleRows.map((row) => row.id)));
+  const stateByPerson = new Map(states.map((row) => [row.person_id, row]));
+  const candidates = peopleRows.filter((row) => {
+    const state = stateByPerson.get(row.id);
+    return !state?.account_follows_person && !state?.person_follows_account && !state?.is_blocked && !state?.pending_follow_request && !state?.suggestion_dismissed_at;
+  });
+  return { rows: candidates.slice(from, from + size).map((row, index) => toPerson(row, from + index, [], [], stateByPerson.get(row.id))), total: candidates.length };
 }
 
-export async function createCircle(rawName) {
+export async function createCircle(accountId, rawName) {
   const name = rawName.trim();
   if (!name || name.length > 40) throw new Error("Circle names must be between 1 and 40 characters.");
-  unwrap(await supabase.from("circles").insert({ name }).select("id").single());
+  unwrap(await supabase.from("circles").insert({ account_id: accountId, name }).select("id").single());
 }
 
-export async function deleteCircles(ids) {
+export async function deleteCircles(accountId, ids) {
   if (!ids.length) return;
-  unwrap(await supabase.from("circles").delete().in("id", ids).select("id"));
+  unwrap(await supabase.from("circles").delete().eq("account_id", accountId).in("id", ids).select("id"));
 }
 
 export async function createPerson({ username: rawUsername, displayName: rawDisplayName }) {
@@ -178,47 +219,55 @@ export async function createPerson({ username: rawUsername, displayName: rawDisp
   unwrap(await supabase.from("people").insert({ username, display_name: displayName, avatar_url: fictionalAvatar(username), is_verified: true }).select("id").single());
 }
 
-export async function updateFollowing(ids, value) {
+async function updateAccountPeople(accountId, ids, updates) {
   if (!ids.length) return;
-  if (!value) unwrap(await supabase.from("circle_members").delete().in("person_id", ids).select("person_id"));
-  unwrap(await supabase.from("people").update({ host_follows: value, followed_by_host: value ? new Date().toISOString() : null, ...(value ? {} : { is_favorite: false }) }).in("id", ids).select("id"));
+  const existing = unwrap(await supabase.from("account_people").update(updates).eq("account_id", accountId).in("person_id", ids).select("person_id"));
+  const found = new Set(existing.map((row) => row.person_id));
+  const missing = ids.filter((id) => !found.has(id));
+  if (missing.length) unwrap(await supabase.from("account_people").insert(missing.map((person_id) => ({ account_id: accountId, person_id, ...updates }))));
 }
 
-export async function setFavorites(ids, value) {
+export async function updateFollowing(accountId, ids, value) {
+  if (!ids.length) return;
+  if (!value) unwrap(await supabase.from("circle_members").delete().eq("account_id", accountId).in("person_id", ids).select("person_id"));
+  await updateAccountPeople(accountId, ids, { account_follows_person: value, followed_by_account_at: value ? new Date().toISOString() : null, ...(value ? {} : { is_favorite: false }) });
+}
+
+export async function setFavorites(accountId, ids, value) {
   if (!ids.length) return;
   const updates = value
-    ? { is_favorite: true, host_follows: true, followed_by_host: new Date().toISOString() }
+    ? { is_favorite: true, account_follows_person: true, followed_by_account_at: new Date().toISOString() }
     : { is_favorite: false };
-  unwrap(await supabase.from("people").update(updates).in("id", ids).select("id"));
+  await updateAccountPeople(accountId, ids, updates);
 }
 
-export async function updatePeople(ids, updates) {
+export async function updatePeople(accountId, ids, updates) {
   if (!ids.length) return;
-  unwrap(await supabase.from("people").update(updates).in("id", ids).select("id"));
+  await updateAccountPeople(accountId, ids, updates);
 }
 
-export async function blockPeople(ids) {
+export async function blockPeople(accountId, ids) {
   if (!ids.length) return;
-  unwrap(await supabase.from("circle_members").delete().in("person_id", ids).select("person_id"));
-  await updatePeople(ids, { is_blocked: true, is_favorite: false, host_follows: false, followed_by_host: null, pending_follow_request: false });
+  unwrap(await supabase.from("circle_members").delete().eq("account_id", accountId).in("person_id", ids).select("person_id"));
+  await updatePeople(accountId, ids, { is_blocked: true, is_favorite: false, account_follows_person: false, followed_by_account_at: null, pending_follow_request: false });
 }
 
-export async function replaceCircleMemberships(ids, draft, people) {
+export async function replaceCircleMemberships(accountId, ids, draft, people) {
   const changes = ids.map((personId) => {
     const current = new Set(people.find((person) => person.id === personId)?.circles || []);
     const next = new Set(draft[personId] || []);
     return { personId, removed: [...current].filter((circleId) => !next.has(circleId)), added: [...next].filter((circleId) => !current.has(circleId)) };
   });
-  for (const { personId, removed } of changes) if (removed.length) unwrap(await supabase.from("circle_members").delete().eq("person_id", personId).in("circle_id", removed).select("person_id"));
-  for (const { personId, added } of changes) if (added.length) unwrap(await supabase.from("circle_members").insert(added.map((circleId) => ({ circle_id: circleId, person_id: personId }))));
+  for (const { personId, removed } of changes) if (removed.length) unwrap(await supabase.from("circle_members").delete().eq("account_id", accountId).eq("person_id", personId).in("circle_id", removed).select("person_id"));
+  for (const { personId, added } of changes) if (added.length) unwrap(await supabase.from("circle_members").insert(added.map((circleId) => ({ account_id: accountId, circle_id: circleId, person_id: personId }))));
 }
 
-export async function loadMessages(personId) {
-  return unwrap(await supabase.from("messages").select("id, body, created_at").eq("person_id", personId).order("created_at", { ascending: true }));
+export async function loadMessages(accountId, personId) {
+  return unwrap(await supabase.from("messages").select("id, body, created_at").eq("account_id", accountId).eq("person_id", personId).order("created_at", { ascending: true }));
 }
 
-export async function sendMessage(personId, rawBody) {
+export async function sendMessage(accountId, personId, rawBody) {
   const body = rawBody.trim();
   if (!body || body.length > 2000) throw new Error("Messages must contain 1–2,000 characters.");
-  return unwrap(await supabase.from("messages").insert({ person_id: personId, body }).select("id, body, created_at").single());
+  return unwrap(await supabase.from("messages").insert({ account_id: accountId, person_id: personId, body }).select("id, body, created_at").single());
 }
