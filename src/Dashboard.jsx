@@ -139,12 +139,12 @@ export default function Dashboard({ people, circles, accounts, accountId, user, 
   const resolveTargets = (person) => selected.size ? [...selected] : [person.id];
   const toggleSelected = (id, checked) => setSelected((current) => { const next = new Set(current); checked ? next.add(id) : next.delete(id); return next; });
   const toggleAllShown = (checked) => setSelected((current) => { const next = new Set(current); visibleRows.forEach((person) => checked ? next.add(person.id) : next.delete(person.id)); return next; });
-  const navigate = (nextRoute = null) => { setRoute(nextRoute); setMockPage(""); setStoryPerson(null); clearSelection(); setMoreFor(null); setNotificationMoreOpen(false); setQuery(""); };
+  const navigate = (nextRoute = null) => { setRoute(nextRoute); setMockPage(""); setStoryPerson(null); clearSelection(); setMoreFor(null); setNotificationMoreOpen(false); setQuery(""); setActionError(""); setCircleFormError(""); };
   const navigateToTab = (nextTab) => { setTab(nextTab); navigate(); };
   const openMockPage = (name) => { setMockPage(name); setRoute(null); setActionError(""); clearSelection(); setMoreFor(null); setQuery(""); };
   const showStory = (person) => setStoryPerson(person);
   const scrollToPosts = () => document.getElementById("profile-posts")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  const selectTab = (nextTab) => { setTab(nextTab); setRoute(null); clearSelection(); setMoreFor(null); };
+  const selectTab = (nextTab) => { setTab(nextTab); setRoute(null); clearSelection(); setMoreFor(null); setActionError(""); setCircleFormError(""); };
   const toggleCircle = (id) => setActive((current) => current.includes(id) ? current.filter((circle) => circle !== id) : [...current, id]);
   const toggleCircleDelete = (id, checked) => setCircleDeleteIds((current) => { const next = new Set(current); checked ? next.add(id) : next.delete(id); return next; });
   const removeSelectedCircles = async () => {
