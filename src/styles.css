@@ -23,3 +23,9 @@
 .notification-floating-menu{position:absolute;z-index:23;right:28px;top:68px}
 .header-actions{display:flex;align-items:center;gap:8px}.favorites-link{border:1px solid var(--line);border-radius:999px;padding:9px 11px;background:transparent;color:var(--ink);font-size:11px;font-weight:700}.person-info strong,.message-recipient strong,.message-profile h1{display:inline-flex;align-items:center;gap:4px}.verified{display:inline-flex;flex:0 0 auto;width:15px;height:15px;margin:0;vertical-align:middle;background:transparent}.verified svg{display:block;width:100%;height:100%}.verified svg>path:first-child{fill:#0095f6}.verified-check{fill:#fff}.notification-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.notification-title h2{margin-top:0}.notification-more-wrap{position:relative}.notification-more-wrap .more-button{color:var(--ink)!important}.notification-more-menu{top:calc(100% + 5px)}
 @media(max-width:600px){.header-actions{gap:5px}.favorites-link{padding:8px 9px}}
+
+/* One fixed black page theme; the bottom navigation is the color reference. */
+:root{--ink:#f6f3ee;--muted:#aaa39b;--line:#302e2c;--card:#000;--page:#000;--soft:#171717;--accent:#ff704d}
+body,body.light,.light,.shell,.shell.light,.shell.dark,.message-page,.story-view{background:#000!important;color:var(--ink);transition:none}
+body.light{--ink:#f6f3ee;--muted:#aaa39b;--line:#302e2c;--card:#000;--page:#000;--soft:#171717;--accent:#ff704d}
+.bottom-nav{background:#000!important;backdrop-filter:none}
