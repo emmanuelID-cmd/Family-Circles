@@ -10,8 +10,8 @@ what was pushed since the previously recorded baseline.
 ## Current verified baseline
 
 - Active branch: `Family-Manny`
-- The last verified published baseline is `b07dce82732f9d3fbde3345caa1721cd27c06212` on local `main`, `origin/main`, and `origin/Family-Manny`.
-- Local `Family-Manny` has advanced beyond that baseline with unpushed work, including managed-profile feature commit `4c3f456`.
+- The last verified published baseline is `f3ea129034fcf7d4957d26081f7ecc4a39f3203d` on `origin/Family-Manny`.
+- `main` is at `625a07806bbc90cbe1e54203999e97f4ca2cd19c`, advanced by PR #6 (`feat: add standalone visited user profile page`). PR #5 remains open for `Family-Manny` and is currently reported as not mergeable; refresh the PR status after synchronizing its base.
 - PR #3 is merged. The branch was rebuilt as a linear history preserving the
   three distinct feature commits; its file tree matched the pre-rebuild tree
   exactly (`08cc1b2de36bf173b42b43afb42785dac9192124`).
@@ -25,12 +25,28 @@ what was pushed since the previously recorded baseline.
 
 # Date and Timestamp of Push
 
-## 2026-09-27T03:58:42-04:00
+All push entries below are ordered by date and time in descending order: the
+newest changes appear first, followed by progressively older entries.
 
-- `Family-Manny`: `8a60ab2` → `9c34ea3` (`8a60ab2..9c34ea3`). Published the
-  profile/navigation references and implementation plus the initial ancestry
-  integration; this opened PR #3. GitHub push-event metadata verified the
-  timestamp.
+## 2026-09-28T06:42:18-04:00
+
+- Branch and push: `Family-Manny`, `b07dce8` to `f3ea129` (`b07dce8..f3ea129`).
+- Feature commit `4c3f456` adds app-level managed profiles: profile switching and account-scoped relationship/Circle data, with Supabase migrations for profile schema, security/indexes, and default profile provisioning. The UI and styling were updated in `src/App.jsx`, `src/Dashboard.jsx`, `src/consistency.css`, and `src/styles.css`; `src/lib/familyData.js` contains the associated data behavior. `README.md` and this reference document were also updated.
+- Follow-up commit `f3ea129` refreshes the branch/push handoff in this document.
+- Validation: production build passed; `git diff --check origin/main...HEAD` passed. Build emitted a bundle-size advisory (>500 kB), not a failure.
+- Integration: PR #5 is open to `main`. No merge was performed, and no `Family-Mo` changes are included.
+- Timestamp is the local verification time, not an independently verified GitHub push-event timestamp.
+
+## 2026-09-27T04:21:11-04:00
+
+- `Family-Manny`: `6fb869a` → `b07dce8`, aligned to the merged `main` tip.
+  Both local and remote branch refs now resolve to the same commit. GitHub
+  push-event metadata verified the timestamp.
+
+## 2026-09-27T04:20:11-04:00
+
+- `main`: `9cc6de7` → `b07dce8` through merged PR #3 after all PR checks passed.
+  GitHub push-event metadata verified the timestamp.
 
 ## 2026-09-27T04:17:56-04:00
 
@@ -39,16 +55,12 @@ what was pushed since the previously recorded baseline.
   Production build, focused search-parser check, and whitespace check passed;
   GitHub push-event metadata verified the timestamp.
 
-## 2026-09-27T04:20:11-04:00
+## 2026-09-27T03:58:42-04:00
 
-- `main`: `9cc6de7` → `b07dce8` through merged PR #3 after all PR checks passed.
-  GitHub push-event metadata verified the timestamp.
-
-## 2026-09-27T04:21:11-04:00
-
-- `Family-Manny`: `6fb869a` → `b07dce8`, aligned to the merged `main` tip.
-  Both local and remote branch refs now resolve to the same commit. GitHub
-  push-event metadata verified the timestamp.
+- `Family-Manny`: `8a60ab2` → `9c34ea3` (`8a60ab2..9c34ea3`). Published the
+  profile/navigation references and implementation plus the initial ancestry
+  integration; this opened PR #3. GitHub push-event metadata verified the
+  timestamp.
 
 ### Superseded baseline notes retained from the earlier handoff
 
