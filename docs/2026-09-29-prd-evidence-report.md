@@ -2,7 +2,7 @@
 
 **Audit date:** September 29, 2026
 **Repository:** Family-Circles, branch `Family-Manny`
-**Audited HEAD:** `f3ea129` (`docs(team-reference): refresh branch and push history`)
+**Audited HEAD:** `e633bcc` (`docs(team-reference): refresh verified branch and push status`), matching `origin/Family-Manny`
 
 ## Deliverables and preserved sources
 
@@ -13,11 +13,11 @@
 
 ## Repository state and method
 
-- Worktree is on `Family-Manny`; `HEAD` matches `origin/Family-Manny` at the inspected baseline. No branch change, pull, staging, commit, push, database access, or application behavior change was made.
-- Pre-existing dirty files were preserved: `docs/TEAM-REFERENCE.md`, `src/Dashboard.jsx`, `src/consistency.css`, and `src/lib/familyData.js`; untracked `Family-Circles.code-workspace`, `src/lib/circleNames.js`, and `src/lib/circleNames.test.js` were also preserved.
-- The source Circles PRD was inspected at `docs/3 After Feedback.md`. The source video PDF was extracted as text from four pages; its original file was not modified.
-- Code, migrations, tests, README claims, and recent Git history were inspected. README statements were treated as claims and checked against the current files.
-- The dedicated `node --test src/lib/circleNames.test.js` run passed 7/7 validator tests. This verifies only the pure name-validation helper, not the React dialog, Supabase insert batch, or production behavior. No production build, UI/browser run, or live Supabase check was used as evidence in this audit.
+- Worktree is on `Family-Manny`; `HEAD` matches `origin/Family-Manny`. The only status item is the intentionally untracked `Family-Circles.code-workspace`, which was preserved. No branch change, pull, staging, commit, push, database access, or application behavior change was made.
+- The source Circles PRD was inspected at `docs/3 After Feedback.md`. The source video PDF remains preserved outside the repository and was not modified; the existing revised Markdown records the source-level decisions and conflicts.
+- Code, migrations, tests, README claims, Team Reference, and recent Git history were inspected. README statements were treated as claims and checked against the current files.
+- The recorded production build command `npm.cmd run build -- --configLoader runner` passed. The ordinary build command's sandbox access error is treated as an environment restriction, not an application failure. No browser/runtime or live Supabase check was used as evidence.
+- GitHub CLI and the web fetch path could not re-check PR #5 in this environment because outbound GitHub access was blocked; its current state and checks therefore remain externally unverified here. PR #6 is represented in the local history as merged into `main`.
 
 ## Evidence map
 
@@ -35,7 +35,7 @@
 | Suggestions and requests | `src/Dashboard.jsx` — first-ten preview, See all route, sentinel/observer; `src/lib/familyData.js` — paged `loadSuggestionsPage`; request list and Confirm/Delete handlers | Pagination and local request/follow actions are coded. The page and database flow were not runtime-verified. |
 | Favorites, Blocked, notifications | `src/Dashboard.jsx` action/dialog handlers; `src/lib/familyData.js` `setFavorites`, `blockPeople`, account preference updates; migration social-state fields | Private prototype state is coded. Notification settings are not delivered externally; favorite/block actions are not applied to Instagram. Runtime not verified. |
 | Messaging | `src/Dashboard.jsx` composer and history; `src/lib/familyData.js` `loadMessages` / `sendMessage`; messages table and account-scoping migration | Text messages can be written/read in the host's private prototype data if the backend accepts the call. No recipient account, inbox delivery, or real messaging transport exists. UI/backend behavior was not exercised here. |
-| Multi-name Circle creation | Dirty `src/Dashboard.jsx`, `src/lib/circleNames.js`, `src/lib/circleNames.test.js`, plus `src/lib/familyData.js` `createCircles` | Local uncommitted implementation accepts comma-separated names and validates blanks, length, duplicate names, existing names, and available slots. Seven helper tests passed; full UI/database behavior remains in progress and unverified. |
+| Multi-name Circle creation | Present in code; runtime-unverified: `src/Dashboard.jsx`, `src/lib/circleNames.js`, `src/lib/circleNames.test.js`, and `src/lib/familyData.js` `createCircles` | The implementation accepts comma-separated names and validates blanks, length, duplicate names, existing names, and available slots. Full UI/database behavior was not runtime-verified. |
 | Feed, stories, and video | `src/Dashboard.jsx` mock navigation/Story placeholder; `src/App.jsx`; source scan for media elements, duration/playback APIs; Git history search | No real feed, post viewer, Story media, video player, slider, preview, or playback controls were found. The video PRD is approved future scope, not implemented functionality. |
 | README claims | `README.md`, checked against the above source and migration locations | Useful orientation only. Its claims about hosted migrations and behavior were not independently verified against Supabase or Vercel. |
 
@@ -55,7 +55,7 @@ The original PDF specifies hover-only reveal, a five-minute maximum, a long-pres
 
 ## PDF output limitation
 
-The supplied four-page PDF was text-extractable using the available Python PDF library. No PDF renderer/visual-verification utility was available in this environment, so the Video PRD is delivered as editable Markdown only; no unverified PDF was generated.
+No PDF renderer/visual-verification utility was available in this environment, so the Video PRD is delivered as editable Markdown only; no unverified PDF was generated.
 
 ## Out of scope for this audit
 
