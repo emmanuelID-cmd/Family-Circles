@@ -10,8 +10,8 @@ what was pushed since the previously recorded baseline.
 ## Current verified baseline
 
 - Active branch: `Family-Manny`
-- The last verified published baseline is `e18d46602feebae69ff5bd5ab2ec959178e5bf06` on `origin/Family-Manny`.
-- `main` is at `625a07806bbc90cbe1e54203999e97f4ca2cd19c`, advanced by PR #6 (`feat: add standalone visited user profile page`). PR #5 remains open for `Family-Manny` and GitHub currently reports it as mergeable; it has not been merged into `main`.
+- The last verified published baseline is `864c837` on `origin/Family-Manny`.
+- `main` includes PR #5 through squash merge commit `53fa645`; PR #6 remains merged in the main history.
 - PR #3 is merged. The branch was rebuilt as a linear history preserving the
   three distinct feature commits; its file tree matched the pre-rebuild tree
   exactly (`08cc1b2de36bf173b42b43afb42785dac9192124`).
@@ -29,6 +29,20 @@ what was pushed since the previously recorded baseline.
 
 All push entries below are ordered by date and time in descending order: the
 newest changes appear first, followed by progressively older entries.
+
+## 2026-09-30T15:33:24-04:00
+
+- `Family-Manny`: `812fada` → `864c837` (`812fada..864c837`). Added the
+  temporary three-member team phase plan at
+  `docs/TEAM-PHASE-PLAN-TEMP.md`, assigning Crystal to Circles Phases 1–4,
+  Mo to Video Phases 5–10, and Family-Manny to integration. The document also
+  records lightweight shared-file and URL coordination guidance without
+  gating work that involves all contributors. Validation: tree was checked,
+  only the requested document was committed, and the push to
+  `origin/Family-Manny` succeeded. The intentionally untracked workspace file
+  was excluded.
+- Timestamp is the local verification time, not an independently verified
+  GitHub push-event timestamp.
 
 ## 2026-09-29T20:38:18-04:00
 
