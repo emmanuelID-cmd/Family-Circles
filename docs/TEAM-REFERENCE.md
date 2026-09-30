@@ -10,8 +10,8 @@ what was pushed since the previously recorded baseline.
 ## Current verified baseline
 
 - Active branch: `Family-Manny`
-- The last verified published baseline is `f3ea129034fcf7d4957d26081f7ecc4a39f3203d` on `origin/Family-Manny`.
-- `main` is at `625a07806bbc90cbe1e54203999e97f4ca2cd19c`, advanced by PR #6 (`feat: add standalone visited user profile page`). PR #5 remains open for `Family-Manny` and is currently reported as not mergeable; refresh the PR status after synchronizing its base.
+- The last verified published baseline is `e18d46602feebae69ff5bd5ab2ec959178e5bf06` on `origin/Family-Manny`.
+- `main` is at `625a07806bbc90cbe1e54203999e97f4ca2cd19c`, advanced by PR #6 (`feat: add standalone visited user profile page`). PR #5 remains open for `Family-Manny` and GitHub currently reports it as mergeable; it has not been merged into `main`.
 - PR #3 is merged. The branch was rebuilt as a linear history preserving the
   three distinct feature commits; its file tree matched the pre-rebuild tree
   exactly (`08cc1b2de36bf173b42b43afb42785dac9192124`).
@@ -19,6 +19,8 @@ what was pushed since the previously recorded baseline.
   tip `9c34ea39394b4692f0de7c457c3bee29a113e1fa`.
 - `Family-Circles.code-workspace` remains an intentionally untracked local
   workspace file.
+- Deferred back-arrow changes in `src/Dashboard.jsx` and `src/consistency.css`
+  are local and have not been pushed.
 - The local, ignored `docs/TEAM-REFERENCE-CHANGE.md` retains the detailed
   teammate handoff from baseline `c92fa38779b24f40d1eb1b152ef152511a5a290e`;
   preserve its local-only tracking policy.
@@ -27,6 +29,28 @@ what was pushed since the previously recorded baseline.
 
 All push entries below are ordered by date and time in descending order: the
 newest changes appear first, followed by progressively older entries.
+
+## 2026-09-29T20:38:18-04:00
+
+- `Family-Manny`: `faf9a58` → `e18d466` (`faf9a58..e18d466`). Merged the latest
+  `main` commit `625a078` into the feature branch, preserving both the
+  standalone visited-profile route and managed-profile behavior. A separate
+  follow-up commit makes malformed profile-route encoding fail safely and
+  adds focused tests. Validation: production build passed with a bundle-size
+  advisory; all 11 focused tests passed; whitespace checks passed. PR #5 is
+  open and GitHub reports it mergeable; no merge into `main` was performed.
+- Timestamp is the local verification time, not an independently verified
+  GitHub push-event timestamp.
+
+## 2026-09-29T20:34:09-04:00
+
+- `Family-Manny`: `f3ea129` → `faf9a58` (`f3ea129..faf9a58`). Pushed four
+  committed changes: comma-separated Circle creation, clearing stale action
+  errors on navigation, dated revised PRDs/evidence report, and refreshed
+  branch/PR status documentation. The deferred back-arrow edits and local
+  workspace file were excluded.
+- Timestamp is the local verification time, not an independently verified
+  GitHub push-event timestamp.
 
 ## 2026-09-28T06:42:18-04:00
 
