@@ -44,7 +44,6 @@
 .mock-navigation-page{min-height:65vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
 .mock-navigation-page h1,.mock-navigation-page p{margin:0}
 .mock-navigation-page p{color:var(--muted)}
-.mock-back{align-self:flex-start;border:0;background:transparent;color:var(--ink);font-size:28px;line-height:1}
 .story-view{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;padding:18px max(16px,env(safe-area-inset-left));background:#000;color:#fff;cursor:pointer}
 .story-canvas{display:flex;flex:1;flex-direction:column;outline:none}
 .account-story-button{display:grid;place-items:center;width:42px;height:42px;padding:3px;border:0;border-radius:50%;background:transparent;cursor:pointer}
@@ -73,9 +72,9 @@
 /* Shared Circles / Following / Followers account header from the reference. */
 .reference-header{display:block;border-bottom:0;padding:0 0 8px}
 .reference-account-row{display:flex;align-items:center;gap:16px;min-height:48px}
-.account-back{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border:0;background:transparent;color:var(--ink);font-size:30px;line-height:1}
 .account-handle{min-width:0;overflow:hidden;color:var(--ink);font-size:16px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
 .reference-account-row .header-actions{margin-left:auto;max-width:none;flex-wrap:nowrap;gap:8px}
+.reference-account-row .person-add-action{order:1}
 .person-add-action{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border:0;border-radius:50%;background:transparent;color:var(--ink)}
 .person-add-action svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .reference-account-row .favorites-link,.reference-account-row .manage-btn{white-space:nowrap}
@@ -93,4 +92,7 @@
 .connect-contacts-row strong{font-size:14px}
 .connect-contacts-row small{color:var(--muted);font-size:12px}
 .connect-contacts-button{border:0;border-radius:10px;background:#4b58d7;color:white;padding:10px 18px;font-weight:700}
-@media(max-width:600px){.reference-account-row{gap:8px}.account-back{flex-basis:30px;width:30px}.account-handle{font-size:14px}.reference-account-row .header-actions{gap:3px}.reference-account-row .favorites-link,.reference-account-row .manage-btn{font-size:9px;padding:7px}.reference-account-row .person-add-action{width:32px;height:32px;flex-basis:32px}.reference-tab{font-size:10px}.reference-tab strong{font-size:11px}}
+@media(max-width:600px){.reference-account-row{gap:8px}.account-handle{font-size:14px}.reference-account-row .header-actions{gap:3px}.reference-account-row .favorites-link,.reference-account-row .manage-btn{font-size:9px;padding:7px}.reference-account-row .person-add-action{width:32px;height:32px;flex-basis:32px}.reference-tab{font-size:10px}.reference-tab strong{font-size:11px}}
+
+/* Canonical back-arrow control; parent rows retain responsibility for surrounding layout. */
+.mock-back,.subpage-heading>.mock-back{display:grid;place-items:center;align-self:flex-start;flex:0 0 36px;width:36px;height:36px;padding:0;border:0;background:transparent;color:var(--ink);font-size:28px;line-height:1}
