@@ -2,12 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import Dashboard from "./Dashboard.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import { createManagedAccount, ensureProfileAvatar, loadFamilyData, loadManagedAccounts } from "./lib/familyData.js";
+import { getUserProfileRoute } from "./lib/profileRoute.js";
 import { supabase } from "./lib/supabase.js";
-
-function getUserProfileRoute() {
-  const match = window.location.hash.match(/^#\/user\/([^/?]+)/);
-  return match ? decodeURIComponent(match[1]) : null;
-}
 
 function AuthForm() {
   const [mode, setMode] = useState("signin");
@@ -63,7 +59,7 @@ function AuthForm() {
 
 export default function App() {
   const [session, setSession] = useState(null);
-  const [userProfileUsername, setUserProfileUsername] = useState(getUserProfileRoute);
+  const [userProfileUsername, setUserProfileUsername] = useState(() => getUserProfileRoute(window.location.hash));
   const [authLoading, setAuthLoading] = useState(true);
   const [workspace, setWorkspace] = useState({ people: [], circles: [], profile: null, accounts: [] });
   const [activeAccountId, setActiveAccountId] = useState(null);
@@ -72,7 +68,7 @@ export default function App() {
   const [retryIndex, setRetryIndex] = useState(0);
 
   useEffect(() => {
-    const syncProfileRoute = () => setUserProfileUsername(getUserProfileRoute());
+    const syncProfileRoute = () => setUserProfileUsername(getUserProfileRoute(window.location.hash));
     window.addEventListener("hashchange", syncProfileRoute);
     return () => window.removeEventListener("hashchange", syncProfileRoute);
   }, []);
