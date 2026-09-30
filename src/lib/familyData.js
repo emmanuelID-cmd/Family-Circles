@@ -200,10 +200,20 @@ export async function loadSuggestionsPage({ accountId, query = "", from = 0, siz
   return { rows: candidates.slice(from, from + size).map((row, index) => toPerson(row, from + index, [], [], stateByPerson.get(row.id))), total: candidates.length };
 }
 
-export async function createCircle(accountId, rawName) {
-  const name = rawName.trim();
-  if (!name || name.length > 40) throw new Error("Circle names must be between 1 and 40 characters.");
-  unwrap(await supabase.from("circles").insert({ account_id: accountId, name }).select("id").single());
+export async function createCircles(accountId, rawNames) {
+  if (!Array.isArray(rawNames) || !rawNames.length) throw new Error("Enter at least one circle name.");
+  const names = rawNames.map((rawName) => String(rawName).trim());
+  if (names.some((name) => !name || name.length > 40)) {
+    throw new Error("Each circle name must be between 1 and 40 characters.");
+  }
+  if (new Set(names.map((name) => name.toLowerCase())).size !== names.length) {
+    throw new Error("Circle names must be unique. Remove any names that repeat.");
+  }
+  const result = await supabase.from("circles").insert(names.map((name) => ({ account_id: accountId, name }))).select("id");
+  if (result.error?.code === "23505") {
+    throw new Error("One or more circle names already exist. Check the list and try again.");
+  }
+  unwrap(result);
 }
 
 export async function deleteCircles(accountId, ids) {
