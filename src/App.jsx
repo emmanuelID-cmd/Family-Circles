@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Dashboard from "./Dashboard.jsx";
+import ReelsTimeframe from "./pages/ReelsTimeframe.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import { createManagedAccount, ensureProfileAvatar, loadFamilyData, loadManagedAccounts } from "./lib/familyData.js";
 import { getUserProfileRoute } from "./lib/profileRoute.js";
@@ -60,6 +61,7 @@ function AuthForm() {
 export default function App() {
   const [session, setSession] = useState(null);
   const [userProfileUsername, setUserProfileUsername] = useState(() => getUserProfileRoute(window.location.hash));
+  const [reelsOpen, setReelsOpen] = useState(() => window.location.hash === "#/reels");
   const [authLoading, setAuthLoading] = useState(true);
   const [workspace, setWorkspace] = useState({ people: [], circles: [], profile: null, accounts: [] });
   const [activeAccountId, setActiveAccountId] = useState(null);
@@ -68,7 +70,10 @@ export default function App() {
   const [retryIndex, setRetryIndex] = useState(0);
 
   useEffect(() => {
-    const syncProfileRoute = () => setUserProfileUsername(getUserProfileRoute(window.location.hash));
+    const syncProfileRoute = () => {
+      setUserProfileUsername(getUserProfileRoute(window.location.hash));
+      setReelsOpen(window.location.hash === "#/reels");
+    };
     window.addEventListener("hashchange", syncProfileRoute);
     return () => window.removeEventListener("hashchange", syncProfileRoute);
   }, []);
@@ -175,6 +180,8 @@ export default function App() {
   if (!session) return <AuthForm />;
   if (dataLoading) return <main className="auth-shell"><p className="auth-loading">Loading your circles…</p></main>;
   if (dataError) return <main className="auth-shell"><section className="auth-card"><div className="brand"><span className="brand-mark">◎</span>circles</div><h1>Couldn’t load your data</h1><p className="auth-error" role="alert">{dataError}</p><p className="auth-intro">Confirm that you ran the Supabase migration and that this project’s Row Level Security policies are enabled.</p><div className="auth-actions"><button className="primary" onClick={() => setRetryIndex((value) => value + 1)}>Retry</button><button className="secondary" onClick={signOut}>Sign out</button></div></section></main>;
+
+  if (reelsOpen) return <ReelsTimeframe onBack={() => { window.location.hash = "/"; }} />;
 
   if (userProfileUsername) {
     const person = workspace.people.find((item) => item.username.toLowerCase() === userProfileUsername.toLowerCase());
