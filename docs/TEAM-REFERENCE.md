@@ -60,6 +60,17 @@ what was pushed since the previously recorded baseline.
 All push entries below are ordered by date and time in descending order: the
 newest changes appear first, followed by progressively older entries.
 
+## 2026-10-01T08:27:15-04:00
+
+- `Family-Crystal`: `625a078` → `9b9f765` (`625a078..9b9f765`). Pushed the
+  Crystal Phase 1–2 managed-account name continuity foundation and Profile
+  name editor in PR #9, covering the six approved implementation files.
+  Validation included focused name-change tests, production build, whitespace
+  and static checks, two local SECURITY rounds, local migration reapplication,
+  authenticated local name-change/cooldown validation, and successful browser
+  review. Hosted Supabase was not modified; no merge was performed.
+- GitHub push-event metadata verified the timestamp and commit range.
+
 ## 2026-09-30T15:33:24-04:00
 
 - `Family-Manny`: `812fada` → `864c837` (`812fada..864c837`). Added the

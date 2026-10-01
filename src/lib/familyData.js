@@ -1,10 +1,12 @@
 import { supabase } from "./supabase.js";
 import { parseAccountSearch } from "./search.js";
+import { planManagedAccountNameChange } from "./nameChange.js";
 
 const colors = ["#d77658", "#5d7c78", "#756595", "#ce9b43", "#b55c7d", "#4d7bb5"];
 const firstNames = ["Maya", "Jon", "Sofia", "Andre", "Nia", "Leo", "Avery", "Noor", "Mateo", "Ivy", "Riley", "Zoe"];
 const lastNames = ["Chen", "Bell", "Reyes", "Lewis", "Patel", "Martin", "Brooks", "Davis", "Rivera", "Nguyen", "James"];
 const notificationDefaults = { posts: "all", stories: "off", reels: "off", liveVideos: "off" };
+const managedAccountFields = "id, username, display_name, pronouns, avatar_url, is_default, temp_user_name, temp_screen_name, name_changed_at";
 
 const avatarPalettes = ["#f4a261", "#a8dadc", "#cdb4db", "#ffd166", "#90be6d", "#f28482", "#84a59d", "#bde0fe", "#e9c46a", "#ffafcc", "#a3b18a", "#b8c0ff"];
 const avatarKinds = ["face", "face", "face", "face", "face", "face", "cat", "flower", "planet", "fox", "cactus", "sun"];
@@ -121,8 +123,29 @@ async function ensureSyntheticPeople() {
   }
 }
 
+async function lazilyExpireManagedAccount(account) {
+  const plan = planManagedAccountNameChange({ current: account, next: { username: account.username, displayName: account.display_name } });
+  if (plan.status !== "cleanup") return account;
+
+  const cleared = await supabase.from("managed_accounts")
+    .update(plan.updates)
+    .eq("id", account.id)
+    .eq("name_changed_at", account.name_changed_at)
+    .select(managedAccountFields)
+    .single();
+  if (cleared.error) throw cleared.error;
+  if (!cleared.data) throw new Error("Could not clear expired managed-account name metadata.");
+  return cleared.data;
+}
+
+async function loadManagedAccount(accountId) {
+  const account = unwrap(await supabase.from("managed_accounts").select(managedAccountFields).eq("id", accountId).single());
+  return lazilyExpireManagedAccount(account);
+}
+
 export async function loadManagedAccounts() {
-  return unwrap(await supabase.from("managed_accounts").select("id, username, display_name, pronouns, avatar_url, is_default").order("created_at", { ascending: true }));
+  const accounts = unwrap(await supabase.from("managed_accounts").select(managedAccountFields).order("created_at", { ascending: true }));
+  return Promise.all(accounts.map(lazilyExpireManagedAccount));
 }
 
 export async function createManagedAccount({ displayName: rawDisplayName, username: rawUsername }) {
@@ -154,7 +177,7 @@ export async function loadFamilyData(accountId) {
   const followingRows = unwrap(followingResult);
   const accountRows = unwrap(await supabase.from("account_people").select("*").eq("account_id", accountId));
   const accountByPerson = new Map(accountRows.map((row) => [row.person_id, row]));
-  const account = unwrap(await supabase.from("managed_accounts").select("id, username, display_name, pronouns, avatar_url, is_default").eq("id", accountId).single());
+  const account = await loadManagedAccount(accountId);
   return {
     people: peopleRows.map((row, index) => toPerson(row, index, membershipRows, followingRows, accountByPerson.get(row.id), account.is_default)),
     circles: circleRows.map(({ id, name }) => ({ id, name })),
@@ -172,6 +195,22 @@ export async function ensureProfileAvatar(userId) {
 
 export async function updateProfile(accountId, updates) {
   unwrap(await supabase.from("managed_accounts").update(updates).eq("id", accountId).select("id").single());
+}
+
+export async function updateManagedAccountNames(accountId, nextNames) {
+  const current = await loadManagedAccount(accountId);
+  const plan = planManagedAccountNameChange({ current, next: nextNames });
+
+  if (plan.status === "blocked") {
+    throw new Error(`Managed account names can be changed again after ${plan.nextEligibleAt.toLocaleDateString()}.`);
+  }
+  if (plan.status === "noop" || plan.status === "cleanup") return current;
+
+  return unwrap(await supabase.from("managed_accounts")
+    .update(plan.updates)
+    .eq("id", accountId)
+    .select(managedAccountFields)
+    .single());
 }
 
 export async function loadSuggestionsPage({ accountId, query = "", from = 0, size = 50 }) {
