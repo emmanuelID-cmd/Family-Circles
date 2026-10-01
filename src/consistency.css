@@ -15,6 +15,9 @@
 .host-profile-top{display:flex;align-items:center;gap:16px;padding:14px 0}
 .host-profile-top>.person-avatar{width:88px;height:88px;flex:0 0 88px;font-size:24px}
 .host-profile-top h1{margin:0;font-size:20px}
+.host-profile-top h1.host-name-line{display:flex;align-items:center;gap:6px}
+.account-switch-trigger{display:inline-grid;place-items:center;width:24px;height:24px;border:0;border-radius:50%;background:transparent;color:var(--ink);font:inherit;font-size:16px;cursor:pointer}
+.account-switch-trigger:hover,.account-switch-trigger[aria-expanded="true"]{background:var(--soft)}
 .host-profile-top p{margin:5px 0 0;color:var(--muted);font-size:13px}
 .host-profile-top .manage-btn{margin-left:auto}
 .profile-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:16px 0;border-bottom:1px solid var(--line);border-top:1px solid var(--line);text-align:center;font-size:12px}
@@ -26,7 +29,7 @@
 .profile-post-empty>div{display:grid;place-items:center;width:48px;height:48px;border:2px solid var(--line);border-radius:50%;color:var(--ink);font-size:25px}
 .profile-post-empty p{margin:0}
 .reference-shell:has(.host-profile-page) .reference-tabs,.reference-shell:has(.host-profile-page) .reference-tools,.reference-shell:has(.host-profile-page) .tab-slot,.reference-shell:has(.host-profile-page) .selection-bar,.reference-shell:has(.host-profile-page) .reference-list,.reference-shell:has(.host-profile-page) .suggestion-sentinel,.reference-shell:has(.host-profile-page) .request-preview,.reference-shell:has(.host-profile-page) .suggested-section,.reference-shell:has(.host-profile-page) .subpage-heading,.reference-shell:has(.mock-navigation-page) .reference-tabs,.reference-shell:has(.mock-navigation-page) .reference-tools,.reference-shell:has(.mock-navigation-page) .tab-slot,.reference-shell:has(.mock-navigation-page) .selection-bar,.reference-shell:has(.mock-navigation-page) .reference-list,.reference-shell:has(.mock-navigation-page) .suggestion-sentinel,.reference-shell:has(.mock-navigation-page) .request-preview,.reference-shell:has(.mock-navigation-page) .suggested-section,.reference-shell:has(.mock-navigation-page) .subpage-heading{display:none}
-.bottom-nav{position:fixed;z-index:12;left:50%;bottom:0;transform:translateX(-50%);display:grid;grid-template-columns:repeat(5,1fr);width:min(760px,100%);padding:8px max(12px,env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:color-mix(in srgb,var(--page) 94%,transparent);backdrop-filter:blur(16px)}
+.bottom-nav{position:fixed;z-index:12;left:50%;bottom:0;transform:translateX(-50%);display:grid;grid-template-columns:repeat(5,1fr);width:min(760px,100%);padding:8px max(12px,env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#000;backdrop-filter:none}
 .bottom-nav button{display:grid;justify-items:center;gap:3px;border:0;background:transparent;color:var(--muted);font-size:10px;padding:4px}
 .bottom-nav button>span.nav-icon{display:block;width:21px;height:21px;line-height:1}
 .bottom-nav button>span.nav-icon svg{display:block;width:100%;height:100%}
@@ -42,8 +45,7 @@
 .mock-navigation-page{min-height:65vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
 .mock-navigation-page h1,.mock-navigation-page p{margin:0}
 .mock-navigation-page p{color:var(--muted)}
-.mock-back{align-self:flex-start;border:0;background:transparent;color:var(--ink);font-size:28px;line-height:1}
-.story-view{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;padding:18px max(16px,env(safe-area-inset-left));background:#111;color:#fff;cursor:pointer}
+.story-view{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;padding:18px max(16px,env(safe-area-inset-left));background:#000;color:#fff;cursor:pointer}
 .story-canvas{display:flex;flex:1;flex-direction:column;outline:none}
 .account-story-button{display:grid;place-items:center;width:42px;height:42px;padding:3px;border:0;border-radius:50%;background:transparent;cursor:pointer}
 .account-story-button>.person-avatar{width:100%;height:100%}
@@ -55,5 +57,43 @@
 .story-account small{color:#c9c9c9}
 .story-canvas>p{margin:auto;text-align:center;color:#fff;font-size:15px}
 .circle-removal-list{padding-right:4px}
+.account-menu-scrim{position:fixed;z-index:20;inset:0;border:0;background:#0005;cursor:default}
+.account-menu{position:fixed;z-index:23;display:grid;gap:3px;width:min(270px,calc(100vw - 32px));max-height:min(60vh,420px);overflow:auto;padding:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 44px #0009}
+.account-menu .eyebrow{margin:3px 8px 5px}
+.account-menu button{display:grid;gap:3px;width:100%;padding:10px 9px;border:0;border-radius:8px;background:transparent;color:var(--ink);text-align:left;cursor:pointer}
+.account-menu button:hover,.account-menu button.active-account{background:var(--soft)}
+.account-menu button span{font-size:13px;font-weight:700}
+.account-menu button small,.field-help{color:var(--muted);font-size:11px}
+.account-menu button.account-menu-add{display:block;margin-top:4px;border-top:1px solid var(--line);border-radius:0;color:var(--accent);font-size:12px;font-weight:700;text-align:left}
+.field-help{display:block;margin:5px 0 0}
+.field-error{display:block;margin:5px 0 0;color:#ff9c8c;font-size:11px;line-height:1.4}
 .dialog-actions button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:600px){.reference-profile>.person-avatar{width:58px;height:58px;flex-basis:58px}.host-stats{gap:12px}.header-actions{max-width:48%;justify-content:flex-end}.header-actions .manage-btn,.header-actions .favorites-link{font-size:10px;padding:8px}.host-profile-top>.story-avatar-button{flex-basis:72px;width:72px;height:72px}.host-profile-top{gap:11px}.host-profile-top h1{font-size:17px}.reference-tools{max-height:100px}.reference-tools .reference-search{font-size:11px}.profile-stat-grid button{font-size:10px;padding:8px 2px}.bottom-nav{width:100%}}
+
+/* Shared Circles / Following / Followers account header from the reference. */
+.reference-header{display:block;border-bottom:0;padding:0 0 8px}
+.reference-account-row{display:flex;align-items:center;gap:16px;min-height:48px}
+.account-handle{min-width:0;overflow:hidden;color:var(--ink);font-size:16px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.reference-account-row .header-actions{margin-left:auto;max-width:none;flex-wrap:nowrap;gap:8px}
+.reference-account-row .person-add-action{order:1}
+.person-add-action{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border:0;border-radius:50%;background:transparent;color:var(--ink)}
+.person-add-action svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.reference-account-row .favorites-link,.reference-account-row .manage-btn{white-space:nowrap}
+.reference-tabs{gap:0;justify-content:space-around;margin:4px 0 12px}
+.reference-tab{display:flex;align-items:center;justify-content:center;gap:4px;flex:1;padding:13px 5px;font-size:12px}
+.reference-tab strong{color:inherit;font-size:13px}
+.discover-page{min-height:65vh;padding:10px 0 100px}
+.discover-page-heading{display:flex;align-items:center;gap:14px;margin:0 0 24px}
+.discover-page-heading h1{margin:0;font-size:18px}
+.discover-search{display:flex;margin-bottom:22px}
+.discover-search .reference-search{width:100%;padding:13px 14px 13px 44px}
+.connect-contacts-row{display:flex;align-items:center;gap:14px;padding:12px 0}
+.contacts-icon{display:grid;place-items:center;width:58px;height:58px;flex:0 0 58px;border-radius:50%;background:var(--soft);font-size:25px}
+.connect-contacts-row>span:nth-child(2){display:grid;gap:4px;flex:1}
+.connect-contacts-row strong{font-size:14px}
+.connect-contacts-row small{color:var(--muted);font-size:12px}
+.connect-contacts-button{border:0;border-radius:10px;background:#4b58d7;color:white;padding:10px 18px;font-weight:700}
+@media(max-width:600px){.reference-account-row{gap:8px}.account-handle{font-size:14px}.reference-account-row .header-actions{gap:3px}.reference-account-row .favorites-link,.reference-account-row .manage-btn{font-size:9px;padding:7px}.reference-account-row .person-add-action{width:32px;height:32px;flex-basis:32px}.reference-tab{font-size:10px}.reference-tab strong{font-size:11px}}
+
+/* Canonical back-arrow control; parent rows retain responsibility for surrounding layout. */
+.mock-back,.subpage-heading>.mock-back{display:grid;place-items:center;align-self:flex-start;flex:0 0 36px;width:36px;height:36px;padding:0;border:0;background:transparent;color:var(--ink);font-size:28px;line-height:1}
