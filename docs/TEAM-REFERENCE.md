@@ -10,7 +10,7 @@ what was pushed since the previously recorded baseline.
 ## Current verified baseline
 
 - Active branch: `Family-Manny`
-- The last verified published baseline is `f17ac6b` on `origin/Family-Manny`.
+- The last verified published baseline is `e01ed9c` on `origin/Family-Manny`.
 - `main` includes PR #7 through squash merge commit `ef83f14`; PR #5 and PR #6 also remain merged in the main history.
 - PR #3 is merged. The branch was rebuilt as a linear history preserving the
   three distinct feature commits; its file tree matched the pre-rebuild tree
@@ -29,6 +29,17 @@ what was pushed since the previously recorded baseline.
 
 All push entries below are ordered by date and time in descending order: the
 newest changes appear first, followed by progressively older entries.
+
+## 2026-10-01T12:01:20-04:00
+
+- `Family-Manny`: `f17ac6b` → `e01ed9c` (`f17ac6b..e01ed9c`). Integrated
+  `origin/main` at PR #7’s squash merge `ef83f14` and reconciled the Team
+  Reference baseline and merge history. The only file conflict was in
+  `docs/TEAM-REFERENCE.md`; its current baseline and prior push entries were
+  combined. Validation: no conflict markers remained, the staged whitespace
+  check passed, and the push succeeded. No application files changed.
+- Timestamp is the local verification time, not an independently verified
+  GitHub push-event timestamp.
 
 ## 2026-09-30T15:38:03-04:00
 
