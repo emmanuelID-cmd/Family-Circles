@@ -10,8 +10,8 @@ what was pushed since the previously recorded baseline.
 ## Current verified baseline
 
 - Active branch: `Family-Manny`
-- The last verified published baseline is `28be5b0` on `origin/Family-Manny`.
-- `main` includes PR #7 through squash merge commit `ef83f14`; PR #5 and PR #6 remain merged in the main history.
+- The last verified published baseline is `f17ac6b` on `origin/Family-Manny`.
+- `main` includes PR #7 through squash merge commit `ef83f14`; PR #5 and PR #6 also remain merged in the main history.
 - PR #3 is merged. The branch was rebuilt as a linear history preserving the
   three distinct feature commits; its file tree matched the pre-rebuild tree
   exactly (`08cc1b2de36bf173b42b43afb42785dac9192124`).
