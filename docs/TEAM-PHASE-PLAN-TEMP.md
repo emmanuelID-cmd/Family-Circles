@@ -1,7 +1,7 @@
 # Family-Circles Temporary Team Phase Plan
 
-**Status:** Temporary coordination document  
-**Application repository:** Family-Circles  
+**Status:** Temporary coordination document
+**Application repository:** Family-Circles
 **External instructions:** `C:\Users\Github\AGENTS` remains a separate repository and workspace.
 
 ## Team lanes
