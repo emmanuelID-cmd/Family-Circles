@@ -1,5 +1,13 @@
 # Team Reference
 
+## 2026-10-01 — `Family-Mo` synchronization and Reels time-frame work
+
+- Pulled `origin/Family-Mo` (already current), then merged the fetched `origin/main` updates into `Family-Mo` at `80df02f`. Resolved the App and Dashboard conflicts by retaining account-scoped profile support, safe profile routing, and generic avatars.
+- `Family-Mo` feature commit `6a41e10` adds a synthetic Reels feed and an accessible time-frame slider with deterministic samples in all four approved duration bands. README and Phase 5/6 implementation notes were updated.
+- The merge push (`7a8e9d6..80df02f`) and feature push (`80df02f..6a41e10`) both succeeded. Current verification timestamp: `2026-10-01T11:35:24-04:00`; this is not an independently measured GitHub push-event timestamp.
+- Validation: production build and `git diff --check` passed. Build reports a non-blocking bundle-size advisory (>500 kB). Actual video, preview frames, interval gestures, and persistent playback speed are not implemented; the Reels samples use local still images and simulated time.
+- `supabase/.DS_Store` remains untracked and was excluded.
+
 ## Family-Mo update
 
 - Updated the profile layout to replace profile and friends-list photos with generic SVG avatar placeholders, and replaced specific mutual names with generic followed-by text.
