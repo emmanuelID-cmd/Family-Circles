@@ -1,12 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./ReelsTimeframe.css";
 
-const mediaItems = [
-  { id: "post", type: "Post video", account: "sample.creator", title: "A few moments from the day", duration: 26, image: "ChatGPT Image Sep 25, 2026, 01_14_14 AM.jpg" },
-  { id: "collage", type: "Collage", account: "sample.studio", title: "Small scenes, together", duration: 48, image: "ChatGPT Image Sep 25, 2026, 01_16_32 AM.jpg" },
-  { id: "live", type: "Live replay", account: "sample.live", title: "A saved live moment", duration: 96, image: "ChatGPT Image Sep 26, 2026, 09_44_42 PM.jpg" },
-  { id: "story", type: "Circle Story", account: "sample.circle", title: "Today in the Family circle", duration: 180, image: "ChatGPT Image Sep 27, 2026, 01_17_27 AM.jpg" },
-];
+const mediaItems = Array.from({ length: 10 }, (_, index) => {
+  const number = String(index + 1).padStart(2, "0");
+  return {
+    id: `reel-${number}`,
+    type: "Reel",
+    account: "family.circles",
+    title: `Video ${index + 1}`,
+    file: `reel-${number}.mp4`,
+  };
+});
 
 const formatTime = (seconds) => {
   const safeSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
@@ -14,42 +18,70 @@ const formatTime = (seconds) => {
 };
 
 function TimeframePlayer({ item, onBack }) {
+  const videoRef = useRef(null);
   const [position, setPosition] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [imageUnavailable, setImageUnavailable] = useState(false);
-  const durationValid = Number.isFinite(item.duration) && item.duration > 0;
+  const [videoUnavailable, setVideoUnavailable] = useState(false);
+  const durationValid = Number.isFinite(duration) && duration > 0;
+  const videoUrl = `/assets/${encodeURIComponent(item.file)}`;
 
   useEffect(() => {
-    if (!playing || !durationValid) return undefined;
-    const timer = window.setInterval(() => setPosition((current) => Math.min(item.duration, current + 0.1)), 100);
-    return () => window.clearInterval(timer);
-  }, [playing, durationValid, item.duration]);
+    setPosition(0);
+    setDuration(0);
+    setPlaying(false);
+    setVideoUnavailable(false);
+  }, [item]);
 
-  useEffect(() => {
-    if (position >= item.duration) setPlaying(false);
-  }, [position, item.duration]);
-
-  const togglePlayback = () => {
-    if (!durationValid) return;
-    if (!playing && position >= item.duration) setPosition(0);
-    setPlaying((current) => !current);
+  const togglePlayback = async () => {
+    const video = videoRef.current;
+    if (!video || videoUnavailable) return;
+    if (video.paused) {
+      try {
+        await video.play();
+      } catch {
+        setPlaying(false);
+      }
+    } else {
+      video.pause();
+    }
   };
 
-  return <section className="timeframe-player" aria-label={`${item.type} time-frame demo`}>
-    <div className="timeframe-player-heading"><button type="button" className="timeframe-back" onClick={onBack}>← Feed</button><span className="prototype-label">Prototype media</span></div>
+  const seek = (event) => {
+    const nextPosition = Number(event.target.value);
+    if (videoRef.current) videoRef.current.currentTime = nextPosition;
+    setPosition(nextPosition);
+  };
+
+  return <section className="timeframe-player" aria-label={`${item.type} video timeline demo`}>
+    <div className="timeframe-player-heading"><button type="button" className="timeframe-back" onClick={onBack}>← Feed</button><span className="prototype-label">Video demo</span></div>
     <div className="timeframe-viewer">
-      {!imageUnavailable ? <img src={`/assets/${encodeURIComponent(item.image)}`} alt="Synthetic still image used in the video time-frame demo" onError={() => setImageUnavailable(true)} /> : <div className="timeframe-image-fallback" role="status">Still preview unavailable. The timeline remains usable.</div>}
+      <video
+        ref={videoRef}
+        className="timeframe-video"
+        src={videoUrl}
+        playsInline
+        preload="metadata"
+        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+        onDurationChange={(event) => setDuration(event.currentTarget.duration)}
+        onTimeUpdate={(event) => setPosition(event.currentTarget.currentTime)}
+        onSeeked={(event) => setPosition(event.currentTarget.currentTime)}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPlaying(false)}
+        onError={() => setVideoUnavailable(true)}
+      />
+      {videoUnavailable && <div className="timeframe-video-message" role="status">Video not available yet. Add <code>{item.file}</code> to <code>public/assets/</code>.</div>}
+      {!playing && !videoUnavailable && <button type="button" className="timeframe-center-play" onClick={togglePlayback} aria-label="Play video">▶</button>}
       {item.id === "live" && <span className="timeframe-live-badge">LIVE REPLAY</span>}
       <span className="timeframe-type-badge">{item.type}</span>
-      <button type="button" className="timeframe-center-play" onClick={togglePlayback} aria-label={playing ? "Pause demo playback" : "Play demo playback"}>{playing ? "Ⅱ" : "▶"}</button>
     </div>
     <div className="timeframe-controls">
-      <div className="timeframe-clock"><output aria-live="off">{formatTime(position)}</output><span>{durationValid ? formatTime(item.duration) : "Duration unavailable"}</span></div>
+      <div className="timeframe-clock"><output aria-label="Current video time" aria-live="off">{formatTime(position)}</output><span aria-label="Video duration">{durationValid ? formatTime(duration) : "--:--"}</span></div>
       {durationValid ? <label className="timeframe-slider-label">Video position
-        <input className="timeframe-slider" type="range" min="0" max={item.duration} step="0.1" value={position} aria-label="Video position" aria-valuetext={`${formatTime(position)} of ${formatTime(item.duration)}`} onChange={(event) => setPosition(Number(event.target.value))} style={{ "--timeframe-progress": `${(position / item.duration) * 100}%` }} />
-      </label> : <p className="timeframe-fallback">Timing is unavailable for this item. The still image remains viewable.</p>}
-      <button type="button" className="timeframe-play-button" onClick={togglePlayback} disabled={!durationValid}>{playing ? "Pause" : "Play"}</button>
-      <p className="timeframe-disclaimer">Still-image demo with a simulated timeline; it does not play or import real social media video.</p>
+        <input className="timeframe-slider" type="range" min="0" max={duration} step="any" value={Math.min(position, duration)} aria-label="Video position" aria-valuetext={`${formatTime(position)} of ${formatTime(duration)}`} onChange={seek} style={{ "--timeframe-progress": `${(position / duration) * 100}%` }} />
+      </label> : <p className="timeframe-fallback">The timeline will appear when the video loads.</p>}
+      <button type="button" className="timeframe-play-button" onClick={togglePlayback} disabled={!durationValid || videoUnavailable}>{playing ? "Pause" : "Play"}</button>
     </div>
   </section>;
 }
@@ -61,14 +93,14 @@ export default function ReelsTimeframe({ onBack }) {
 
   return <main className="timeframe-page"><div className="timeframe-shell">
     <header className="timeframe-header"><button type="button" className="timeframe-back" onClick={onBack}>← Circles</button><div><p className="timeframe-kicker">FAMILY CIRCLES</p><h1>Reels</h1></div><span className="prototype-label">Demo</span></header>
-    <p className="timeframe-intro">Choose a sample to open its timeline. Each sample has a deterministic duration in one of the approved time bands.</p>
-    <section className="timeframe-feed" aria-label="Synthetic Reels and Story samples">
+    <p className="timeframe-intro">Choose a video to open its timeline. The slider follows the video's actual playback position.</p>
+    <section className="timeframe-feed" aria-label="Reels and Circle Story videos">
       {mediaItems.map((item) => <article className="timeframe-card" key={item.id}>
-        <img src={`/assets/${encodeURIComponent(item.image)}`} alt="" />
-        <div className="timeframe-card-copy"><span className="timeframe-card-type">{item.type} · {formatTime(item.duration)}</span><h2>{item.title}</h2><p>@{item.account}</p></div>
-        <button type="button" className="timeframe-open-button" onClick={() => setSelectedItem(item)}>Open timeline <span aria-hidden="true">→</span></button>
+        <video className="timeframe-card-video" src={`/assets/${encodeURIComponent(item.file)}`} muted playsInline preload="metadata" aria-label={`${item.title} preview`} />
+        <div className="timeframe-card-copy"><span className="timeframe-card-type">{item.type}</span><h2>{item.title}</h2><p>@{item.account}</p></div>
+        <button type="button" className="timeframe-open-button" onClick={() => setSelectedItem(item)}>Open video <span aria-hidden="true">→</span></button>
       </article>)}
     </section>
-    <p className="timeframe-disclaimer">All accounts and media here are synthetic prototype examples. This page does not connect to Instagram.</p>
+    <p className="timeframe-disclaimer">Sample video clips stored in this project for the Reels timeline demo.</p>
   </div></main>;
 }
