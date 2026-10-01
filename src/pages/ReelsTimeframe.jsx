@@ -143,7 +143,10 @@ export default function ReelsTimeframe({ onBack }) {
     <section className="timeframe-feed" aria-label="Reels and Circle Story videos">
       {mediaItems.map((item) => <article className="timeframe-card" key={item.id}>
         <div className="timeframe-card-media">
-          <video className="timeframe-card-video" src={`/assets/${encodeURIComponent(item.file)}`} muted playsInline preload="metadata" aria-label={`${item.title} preview`} onLoadedMetadata={(event) => setPreviewDurations((current) => ({ ...current, [item.id]: event.currentTarget.duration }))} />
+          <video className="timeframe-card-video" src={`/assets/${encodeURIComponent(item.file)}`} muted playsInline preload="metadata" aria-label={`${item.title} preview`} onLoadedMetadata={(event) => {
+            const loadedDuration = event.currentTarget.duration;
+            setPreviewDurations((current) => ({ ...current, [item.id]: loadedDuration }));
+          }} />
           <span className="timeframe-duration-badge" aria-label={`Video duration ${formatDuration(previewDurations[item.id])}`}>{formatDuration(previewDurations[item.id])}</span>
         </div>
         <div className="timeframe-card-copy"><span className="timeframe-card-type">{item.type}</span><h2>{item.title}</h2><p>@{item.account} · demo</p></div>
