@@ -105,6 +105,11 @@ export default function App() {
   }, [activeAccountId]);
 
   useEffect(() => {
+    // The synthetic Reels demo uses only bundled public clips and needs no account data.
+    if (reelsOpen) {
+      setDataLoading(false);
+      return undefined;
+    }
     if (!session?.user) {
       setWorkspace({ people: [], circles: [], profile: null, accounts: [] });
       setActiveAccountId(null);
@@ -142,7 +147,7 @@ export default function App() {
     };
     load();
     return () => { active = false; };
-  }, [session?.user?.id, retryIndex]);
+  }, [session?.user?.id, retryIndex, reelsOpen]);
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -176,12 +181,12 @@ export default function App() {
     return account;
   };
 
+  if (reelsOpen) return <ReelsTimeframe onBack={() => { window.location.hash = "/"; }} />;
+
   if (authLoading) return <main className="auth-shell"><p className="auth-loading">Loading your session…</p></main>;
   if (!session) return <AuthForm />;
   if (dataLoading) return <main className="auth-shell"><p className="auth-loading">Loading your circles…</p></main>;
   if (dataError) return <main className="auth-shell"><section className="auth-card"><div className="brand"><span className="brand-mark">◎</span>circles</div><h1>Couldn’t load your data</h1><p className="auth-error" role="alert">{dataError}</p><p className="auth-intro">Confirm that you ran the Supabase migration and that this project’s Row Level Security policies are enabled.</p><div className="auth-actions"><button className="primary" onClick={() => setRetryIndex((value) => value + 1)}>Retry</button><button className="secondary" onClick={signOut}>Sign out</button></div></section></main>;
-
-  if (reelsOpen) return <ReelsTimeframe onBack={() => { window.location.hash = "/"; }} />;
 
   if (userProfileUsername) {
     const person = workspace.people.find((item) => item.username.toLowerCase() === userProfileUsername.toLowerCase());

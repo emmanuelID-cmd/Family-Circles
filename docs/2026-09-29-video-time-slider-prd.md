@@ -218,7 +218,7 @@ Durations below were read from the included MP4 movie metadata and are rounded u
 
 | Status | Evidence |
 | :---- | :---- |
-| Implemented in local prototype | Ten local MP4 clips; actual metadata duration and playback position in the open player; title and rounded-up duration on each feed card; fictional, explicitly marked demo account labels; click/tap video to toggle playback; click outside or press Escape to dismiss; ±15-second seek buttons only when duration is greater than 15 seconds. |
+| Implemented in local prototype | Ten local MP4 clips; the synthetic Reels route renders without loading or requiring account data; actual metadata duration and playback position in the open player; title and rounded-up duration on each feed card; fictional, explicitly marked demo account labels; click/tap video to toggle playback; click outside or press Escape to dismiss; ±15-second seek buttons only when duration is greater than 15 seconds. |
 | Not implemented | Synchronized frame previews, saved playback-speed preferences, hold gestures, frame stepping, short-range timeline, return marker, Story sequence completion, production account attribution, and media permission integration. |
 | Still unresolved for product release | Five-minute-cap resolution, supported production media surfaces, production account/media data source, intervals by video length beyond this demo's fixed 15 seconds, gesture collision thresholds, speed and frame-step behavior, return marker lifecycle, and production accessibility acceptance criteria. |
 
