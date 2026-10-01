@@ -4,9 +4,9 @@
 **Feature name:** In-View Video Time Slider, Preview, and Precision Controls
 **Owner:** Family Circles product team
 **Source:** Family-Circles-Video-Time-Slider-New-Feature-Plain.pdf (provided local PDF)
-**Revision date:** September 29, 2026
+**Revision date:** October 1, 2026
 
-> This dated Markdown copy preserves the source PRD structure and adds approved decisions. Priority indicates importance, not delivery status. No operational video player or slider was found in the audited repository; see the [evidence report](2026-09-29-prd-evidence-report.md). A revised PDF is not included because this environment cannot render and visually verify one.
+> This Markdown copy preserves the source PRD structure and records the approved prototype updates made October 1, 2026. Priority indicates importance, not delivery status. The current Reels demo uses ten local MP4 clips and a working player; it does not connect to Instagram or represent verified creator accounts. The [evidence report](2026-09-29-prd-evidence-report.md) describes the earlier audit state.
 
 ## 1. PROBLEM
 
@@ -39,7 +39,7 @@ As a member browsing Reels, I may want total duration shown on a Reel thumbnail 
 4. The selected position and any preview reflect valid media timing; playback can resume at the selected position.
 5. If timing metadata or preview frames are unavailable, the member can still use supported normal playback and receives a truthful fallback.
 
-**Current implementation note:** The audited branch has no operational video player, Story media, video timing, or slider, so this is a proposed journey, not a description of current product behavior.
+**Current implementation note:** The Family-Mo prototype now has ten local Reels, a playback timeline driven by video metadata, click-to-play/pause, a dismissible player overlay, and conditional 15-second skip controls. This is local demo behavior; it is not connected to Instagram or production account data.
 
 ## 2. PROPOSED SOLUTION
 
@@ -115,9 +115,13 @@ Targets below retain the source PRD's hypotheses; validate the denominator and i
 
 **Sub-journey: Control playback while playing**
 
-- **[P0]** A left-area tap skips backward by the configured interval.
-- **[P0]** A right-area tap skips forward by the configured interval.
-- **[P0]** A center tap pauses playback.
+- **[P0, prototype update]** Clicking or tapping the video toggles play and pause.
+- **[P0, prototype update]** Clicking or tapping outside the open video player closes the player; Escape also closes it.
+- **[P0, prototype update]** For videos longer than 15 seconds, separate rewind and fast-forward controls seek backward or forward by 15 seconds and clamp at the start or end.
+- **[P0, prototype update]** Videos that are 15 seconds or shorter do not show the 15-second skip controls.
+- **[P0, prior proposal]** A left-area tap skips backward by the configured interval.
+- **[P0, prior proposal]** A right-area tap skips forward by the configured interval.
+- **[P0, prior proposal]** A center tap pauses playback.
 - **[P0]** Holding the center produces no action.
 - **[P0]** Holding the right area temporarily sets playback to 2.00×; release restores the saved playback speed without changing the saved preference.
 - **[P0]** User can advance through duration-based video intervals without a separate press solely for the final second; for a two-minute video using 30-second intervals, the third press lands at 1:29 and no extra press at 1:59 is required.
@@ -174,6 +178,8 @@ Targets below retain the source PRD's hypotheses; validate the denominator and i
 - **Reel thumbnail duration:** The source's optional bottom-left duration cue is not contradicted; retain as optional P2 when valid metadata is available.
 - **Stories and intervals:** Preserve the source's requirement to complete a five-Story sequence on its fifth press and avoid an unnecessary final interval press unless an approved behavior supersedes it. Exact durations, sequence semantics, and completion timing remain unresolved.
 - **Gesture collision:** Double-tap means Favorite, but rapid pause/resume and repeated single-frame taps may be misrecognized as a double-tap. A 300 ms recognition window was suggested but never finalized. Do not select a threshold or precedence rule without product approval.
+- **October 1 prototype controls:** For the local demo, tapping the video toggles playback, clicking the dimmed area outside the player closes it, and dedicated ±15-second controls appear only when the loaded clip exceeds 15 seconds. These prototype controls supersede the source's area-tap interval and center-tap proposal for this demo; hold gestures and frame stepping are not implemented.
+- **Demo account labels:** The ten clips use fictional `@demo.circleNN` labels because the requester has no verified account names for them. They must remain visibly identified as demo labels and must not be described as the real creators.
 
 #### Open Questions
 
@@ -191,13 +197,30 @@ Resolve before implementation sign-off:
 10. Which playback-speed settings are persisted per user/profile, and how are storage failures surfaced?
 11. What gesture feedback and accessibility announcements are required without obscuring video or causing unexpected audio?
 
-#### Implementation Status (audited September 29, 2026)
+#### Prototype Media Included (October 1, 2026)
+
+Durations below were read from the included MP4 movie metadata and are rounded up to whole seconds in the feed so the pre-open label does not understate clip length. The open player reads its duration from the browser's loaded video metadata. Titles and handles are generic demo copy, not verified clip descriptions or creator identities.
+
+| File | Feed title | MP4 duration | Feed label |
+| :---- | :---- | :---- | :---- |
+| `public/assets/reel-01.mp4` | A little moment | 14.067 sec | 0:15 · `@demo.circle01` |
+| `public/assets/reel-02.mp4` | Everyday highlights | 6.100 sec | 0:07 · `@demo.circle02` |
+| `public/assets/reel-03.mp4` | A day to remember | 23.100 sec | 0:24 · `@demo.circle03` |
+| `public/assets/reel-04.mp4` | Moments together | 15.000 sec | 0:15 · `@demo.circle04` |
+| `public/assets/reel-05.mp4` | Life lately | 24.728 sec | 0:25 · `@demo.circle05` |
+| `public/assets/reel-06.mp4` | Weekend scenes | 25.300 sec | 0:26 · `@demo.circle06` |
+| `public/assets/reel-07.mp4` | Good times | 13.583 sec | 0:14 · `@demo.circle07` |
+| `public/assets/reel-08.mp4` | Out and about | 26.354 sec | 0:27 · `@demo.circle08` |
+| `public/assets/reel-09.mp4` | The long version | 61.700 sec | 1:02 · `@demo.circle09` |
+| `public/assets/reel-10.mp4` | One more memory | 9.821 sec | 0:10 · `@demo.circle10` |
+
+#### Implementation Status (October 1, 2026)
 
 | Status | Evidence |
 | :---- | :---- |
-| Approved, not implemented | No video player, `<video>` surface, playback state, seeking, frame preview, speed control, or video-specific test was found in the inspected source, migrations, or available Git history. |
-| Source requirements retained with conflict | Hover-only reveal, five-minute cap, slide-down/up speed, interval advancement, five-item Story completion, optional Reel duration, permissions, metadata failure, and keyboard access are documented in the original four-page PDF. The newer approved touch, right-hold, preview, frame, and persistent-speed requirements update or extend these; unresolved contradictions are listed above. |
-| Proposals or unresolved | Any unapproved 300 ms gesture threshold, five-minute-cap resolution, exact intervals, timing thresholds, acceleration rates, marker lifecycle, and exact supported surfaces remain undecided. |
+| Implemented in local prototype | Ten local MP4 clips; actual metadata duration and playback position in the open player; title and rounded-up duration on each feed card; fictional, explicitly marked demo account labels; click/tap video to toggle playback; click outside or press Escape to dismiss; ±15-second seek buttons only when duration is greater than 15 seconds. |
+| Not implemented | Synchronized frame previews, saved playback-speed preferences, hold gestures, frame stepping, short-range timeline, return marker, Story sequence completion, production account attribution, and media permission integration. |
+| Still unresolved for product release | Five-minute-cap resolution, supported production media surfaces, production account/media data source, intervals by video length beyond this demo's fixed 15 seconds, gesture collision thresholds, speed and frame-step behavior, return marker lifecycle, and production accessibility acceptance criteria. |
 
 #### Other links
 

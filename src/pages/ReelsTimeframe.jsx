@@ -3,12 +3,26 @@ import "./ReelsTimeframe.css";
 
 const mediaItems = Array.from({ length: 10 }, (_, index) => {
   const number = String(index + 1).padStart(2, "0");
+  const titles = [
+    "A little moment",
+    "Everyday highlights",
+    "A day to remember",
+    "Moments together",
+    "Life lately",
+    "Weekend scenes",
+    "Good times",
+    "Out and about",
+    "The long version",
+    "One more memory",
+  ];
+  const durations = [14.067, 6.1, 23.1, 15, 24.728, 25.3, 13.583, 26.354, 61.7, 9.821];
   return {
     id: `reel-${number}`,
     type: "Reel",
-    account: "family.circles",
-    title: `Video ${index + 1}`,
+    account: `demo.circle${number}`,
+    title: titles[index],
     file: `reel-${number}.mp4`,
+    duration: durations[index],
   };
 });
 
@@ -16,6 +30,8 @@ const formatTime = (seconds) => {
   const safeSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
   return `${Math.floor(safeSeconds / 60)}:${String(safeSeconds % 60).padStart(2, "0")}`;
 };
+
+const formatDuration = (seconds) => formatTime(Math.ceil(Number(seconds) || 0));
 
 function TimeframePlayer({ item, onBack }) {
   const videoRef = useRef(null);
@@ -32,6 +48,14 @@ function TimeframePlayer({ item, onBack }) {
     setPlaying(false);
     setVideoUnavailable(false);
   }, [item]);
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") onBack();
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onBack]);
 
   const togglePlayback = async () => {
     const video = videoRef.current;
@@ -53,6 +77,21 @@ function TimeframePlayer({ item, onBack }) {
     setPosition(nextPosition);
   };
 
+  const seekBy = (seconds) => {
+    const video = videoRef.current;
+    if (!video || !durationValid) return;
+    const nextPosition = Math.min(duration, Math.max(0, video.currentTime + seconds));
+    video.currentTime = nextPosition;
+    setPosition(nextPosition);
+  };
+
+  const handleVideoKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      togglePlayback();
+    }
+  };
+
   return <section className="timeframe-player" aria-label={`${item.type} video timeline demo`}>
     <div className="timeframe-player-heading"><button type="button" className="timeframe-back" onClick={onBack}>← Feed</button><span className="prototype-label">Video demo</span></div>
     <div className="timeframe-viewer">
@@ -70,10 +109,13 @@ function TimeframePlayer({ item, onBack }) {
         onPause={() => setPlaying(false)}
         onEnded={() => setPlaying(false)}
         onError={() => setVideoUnavailable(true)}
+        onClick={togglePlayback}
+        onKeyDown={handleVideoKeyDown}
+        tabIndex="0"
+        aria-label="Video playback. Click to play or pause."
       />
       {videoUnavailable && <div className="timeframe-video-message" role="status">Video not available yet. Add <code>{item.file}</code> to <code>public/assets/</code>.</div>}
       {!playing && !videoUnavailable && <button type="button" className="timeframe-center-play" onClick={togglePlayback} aria-label="Play video">▶</button>}
-      {item.id === "live" && <span className="timeframe-live-badge">LIVE REPLAY</span>}
       <span className="timeframe-type-badge">{item.type}</span>
     </div>
     <div className="timeframe-controls">
@@ -81,6 +123,10 @@ function TimeframePlayer({ item, onBack }) {
       {durationValid ? <label className="timeframe-slider-label">Video position
         <input className="timeframe-slider" type="range" min="0" max={duration} step="any" value={Math.min(position, duration)} aria-label="Video position" aria-valuetext={`${formatTime(position)} of ${formatTime(duration)}`} onChange={seek} style={{ "--timeframe-progress": `${(position / duration) * 100}%` }} />
       </label> : <p className="timeframe-fallback">The timeline will appear when the video loads.</p>}
+      {durationValid && duration > 15 && <div className="timeframe-skip-controls" aria-label="Skip controls">
+        <button type="button" onClick={() => seekBy(-15)} aria-label="Rewind 15 seconds">↶ 15s</button>
+        <button type="button" onClick={() => seekBy(15)} aria-label="Fast forward 15 seconds">15s ↷</button>
+      </div>}
       <button type="button" className="timeframe-play-button" onClick={togglePlayback} disabled={!durationValid || videoUnavailable}>{playing ? "Pause" : "Play"}</button>
     </div>
   </section>;
@@ -88,19 +134,28 @@ function TimeframePlayer({ item, onBack }) {
 
 export default function ReelsTimeframe({ onBack }) {
   const [selectedItem, setSelectedItem] = useState(null);
-
-  if (selectedItem) return <main className="timeframe-page"><div className="timeframe-shell"><TimeframePlayer key={selectedItem.id} item={selectedItem} onBack={() => setSelectedItem(null)} /></div></main>;
+  const [previewDurations, setPreviewDurations] = useState(() => Object.fromEntries(mediaItems.map((item) => [item.id, item.duration])));
+  const closePlayer = () => setSelectedItem(null);
 
   return <main className="timeframe-page"><div className="timeframe-shell">
     <header className="timeframe-header"><button type="button" className="timeframe-back" onClick={onBack}>← Circles</button><div><p className="timeframe-kicker">FAMILY CIRCLES</p><h1>Reels</h1></div><span className="prototype-label">Demo</span></header>
     <p className="timeframe-intro">Choose a video to open its timeline. The slider follows the video's actual playback position.</p>
     <section className="timeframe-feed" aria-label="Reels and Circle Story videos">
       {mediaItems.map((item) => <article className="timeframe-card" key={item.id}>
-        <video className="timeframe-card-video" src={`/assets/${encodeURIComponent(item.file)}`} muted playsInline preload="metadata" aria-label={`${item.title} preview`} />
-        <div className="timeframe-card-copy"><span className="timeframe-card-type">{item.type}</span><h2>{item.title}</h2><p>@{item.account}</p></div>
+        <div className="timeframe-card-media">
+          <video className="timeframe-card-video" src={`/assets/${encodeURIComponent(item.file)}`} muted playsInline preload="metadata" aria-label={`${item.title} preview`} onLoadedMetadata={(event) => setPreviewDurations((current) => ({ ...current, [item.id]: event.currentTarget.duration }))} />
+          <span className="timeframe-duration-badge" aria-label={`Video duration ${formatDuration(previewDurations[item.id])}`}>{formatDuration(previewDurations[item.id])}</span>
+        </div>
+        <div className="timeframe-card-copy"><span className="timeframe-card-type">{item.type}</span><h2>{item.title}</h2><p>@{item.account} · demo</p></div>
         <button type="button" className="timeframe-open-button" onClick={() => setSelectedItem(item)}>Open video <span aria-hidden="true">→</span></button>
       </article>)}
     </section>
-    <p className="timeframe-disclaimer">Sample video clips stored in this project for the Reels timeline demo.</p>
-  </div></main>;
+    <p className="timeframe-disclaimer">Sample video clips stored in this project. Account names are fictional demo labels.</p>
+  </div>
+  {selectedItem && <div className="timeframe-overlay" onClick={closePlayer}>
+    <div className="timeframe-dialog" role="dialog" aria-modal="true" aria-label={`${selectedItem.title} player`} onClick={(event) => event.stopPropagation()}>
+      <TimeframePlayer key={selectedItem.id} item={selectedItem} onBack={closePlayer} />
+    </div>
+  </div>}
+  </main>;
 }
