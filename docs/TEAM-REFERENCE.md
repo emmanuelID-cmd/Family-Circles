@@ -1,5 +1,35 @@
 # Team Reference
 
+## 2026-10-01 — `Family-Mo` synchronization and Reels time-frame work
+
+- Pulled `origin/Family-Mo` (already current), then merged the fetched `origin/main` updates into `Family-Mo` at `80df02f`. Resolved the App and Dashboard conflicts by retaining account-scoped profile support, safe profile routing, and generic avatars.
+- `Family-Mo` feature commit `6a41e10` adds a synthetic Reels feed and an accessible time-frame slider with deterministic samples in all four approved duration bands. README and Phase 5/6 implementation notes were updated.
+- The merge push (`7a8e9d6..80df02f`) and feature push (`80df02f..6a41e10`) both succeeded. Current verification timestamp: `2026-10-01T11:35:24-04:00`; this is not an independently measured GitHub push-event timestamp.
+- Validation: production build and `git diff --check` passed. Build reports a non-blocking bundle-size advisory (>500 kB). Actual video, preview frames, interval gestures, and persistent playback speed are not implemented; the Reels samples use local still images and simulated time.
+- `supabase/.DS_Store` remains untracked and was excluded.
+
+## Family-Mo update
+
+- Updated the profile layout to replace profile and friends-list photos with generic SVG avatar placeholders, and replaced specific mutual names with generic followed-by text.
+- Added a standalone visited-user profile page with a dedicated route, generic avatar placeholders, profile stats, bio, Follow/Message actions, and back navigation. `src/Dashboard.jsx` remains untouched.
+
+## Push verified — `Family-Mo` at `e51a2da`
+
+- Verification timestamp: `2026-09-27T13:53:06-04:00`. The push command confirmed the remote update; this is the verification time, not an independently measured server-side push timestamp.
+- Previous remote commit: `c92fa38779b24f40d1eb1b152ef152511a5a290e`.
+- Resulting remote commit: `e51a2da` (`refactor: use generic profile and friend avatars`).
+- Pushed range: `c92fa38..e51a2da`, including the latest `origin/main` changes and the Family-Mo avatar update.
+- Updated `src/Dashboard.jsx`, `src/consistency.css`, and `src/styles.css` to use generic SVG silhouettes and followed-by copy. Owner-managed account names and handles remain visible in relationship lists so search and organization continue to work.
+- Updated this team reference. `git diff --check` passed before the feature commit; no build or tests were run.
+
+## Push verified — `Family-Mo` at `74a7212`
+
+- Verification timestamp: `2026-09-28T07:33:35-04:00`. The push command confirmed the remote update; this is the verification time, not an independently measured server-side push timestamp.
+- Previous remote commit: `67cc6d2`.
+- Resulting remote commit: `74a7212` (`feat: add standalone visited user profile page`).
+- Updated `src/App.jsx` with a separate `#/user/:username` route; added `src/pages/UserProfile.jsx` and its stylesheet. `src/Dashboard.jsx` was not modified.
+- `npm run build` and `git diff --check` passed before the feature commit. No tests were run.
+
 ## Purpose
 
 Shared collaboration notes for Family-Circles. Keep this file useful to every
@@ -50,6 +80,17 @@ newest changes appear first, followed by progressively older entries.
   succeeded. PR #7 subsequently merged into `main` as `ef83f14`.
 - Timestamp is the local verification time, not an independently verified
   GitHub push-event timestamp.
+
+## 2026-10-01T08:27:15-04:00
+
+- `Family-Crystal`: `625a078` → `9b9f765` (`625a078..9b9f765`). Pushed the
+  Crystal Phase 1–2 managed-account name continuity foundation and Profile
+  name editor in PR #9, covering the six approved implementation files.
+  Validation included focused name-change tests, production build, whitespace
+  and static checks, two local SECURITY rounds, local migration reapplication,
+  authenticated local name-change/cooldown validation, and successful browser
+  review. Hosted Supabase was not modified; no merge was performed.
+- GitHub push-event metadata verified the timestamp and commit range.
 
 ## 2026-09-30T15:33:24-04:00
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Dashboard from "./Dashboard.jsx";
+import ReelsTimeframe from "./pages/ReelsTimeframe.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import { createManagedAccount, ensureProfileAvatar, loadFamilyData, loadManagedAccounts } from "./lib/familyData.js";
 import { getUserProfileRoute } from "./lib/profileRoute.js";
@@ -60,6 +61,7 @@ function AuthForm() {
 export default function App() {
   const [session, setSession] = useState(null);
   const [userProfileUsername, setUserProfileUsername] = useState(() => getUserProfileRoute(window.location.hash));
+  const [reelsOpen, setReelsOpen] = useState(() => window.location.hash === "#/reels");
   const [authLoading, setAuthLoading] = useState(true);
   const [workspace, setWorkspace] = useState({ people: [], circles: [], profile: null, accounts: [] });
   const [activeAccountId, setActiveAccountId] = useState(null);
@@ -68,7 +70,10 @@ export default function App() {
   const [retryIndex, setRetryIndex] = useState(0);
 
   useEffect(() => {
-    const syncProfileRoute = () => setUserProfileUsername(getUserProfileRoute(window.location.hash));
+    const syncProfileRoute = () => {
+      setUserProfileUsername(getUserProfileRoute(window.location.hash));
+      setReelsOpen(window.location.hash === "#/reels");
+    };
     window.addEventListener("hashchange", syncProfileRoute);
     return () => window.removeEventListener("hashchange", syncProfileRoute);
   }, []);
@@ -100,6 +105,11 @@ export default function App() {
   }, [activeAccountId]);
 
   useEffect(() => {
+    // The synthetic Reels demo uses only bundled public clips and needs no account data.
+    if (reelsOpen) {
+      setDataLoading(false);
+      return undefined;
+    }
     if (!session?.user) {
       setWorkspace({ people: [], circles: [], profile: null, accounts: [] });
       setActiveAccountId(null);
@@ -137,7 +147,7 @@ export default function App() {
     };
     load();
     return () => { active = false; };
-  }, [session?.user?.id, retryIndex]);
+  }, [session?.user?.id, retryIndex, reelsOpen]);
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -170,6 +180,8 @@ export default function App() {
     setActiveAccountId(account.id);
     return account;
   };
+
+  if (reelsOpen) return <ReelsTimeframe onBack={() => { window.location.hash = "/"; }} />;
 
   if (authLoading) return <main className="auth-shell"><p className="auth-loading">Loading your session…</p></main>;
   if (!session) return <AuthForm />;
