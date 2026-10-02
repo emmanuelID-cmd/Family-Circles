@@ -2,19 +2,19 @@
 
 ## Scope
 
-Implement the reusable timeline and basic seeking behavior on approved video surfaces.
+Replace the native-only timeline in the Phase 5 synthetic profile Reels demo with the reusable P0 time slider, then apply it consistently to any additional video surfaces approved for this phase.
 
 ## Work
 
-- Add touch, pointer, and keyboard slider interaction.
-- Show selected timestamp and total duration.
-- Seek and play from the selected position.
-- Separate slider gestures from video-area gestures.
-- Preserve permission, metadata, loading, error, and accessibility behavior.
+- Add touch, pointer, and keyboard slider interaction to the profile Reel video player.
+- Show the selected timestamp and total duration; seek and allow playback from the selected position.
+- Keep slider gestures distinct from the video-area tap/hold controls defined in the Video Time Slider PRD.
+- Preserve applicable permissions, metadata, loading, error, and accessibility behavior.
+- Keep supported media surfaces explicit; profile Reels is the initial confirmed demo surface, while any additional surfaces require confirmation before implementation.
 
 ## Acceptance criteria
 
-- Every approved supported surface has consistent P0 slider behavior.
+- The confirmed profile Reels surface has consistent P0 slider behavior; any other approved supported surface uses the same implementation.
 - Touch does not depend on hover.
 - Invalid or missing duration is not presented as accurate.
 - Unauthorized media does not expose previews or playback.
@@ -25,11 +25,11 @@ Implement the reusable timeline and basic seeking behavior on approved video sur
 
 ## Validation
 
-Unit/component tests plus browser checks for touch, pointer, keyboard, permission, metadata, loading, and error states.
+- Unit/component tests plus browser checks for touch, pointer, keyboard, selected-time seeking, playback, permission, metadata, loading, and error states. Validate separately on each surface included in the phase.
 
 ## Implementation progress — 2026-10-01
 
-- Added a native range timeline to each synthetic media viewer. It supports browser-provided pointer, touch, and keyboard input, shows the selected timestamp and total duration, and lets the user play or pause a local timing simulation from the selected position.
-- Invalid duration values hide the slider and show an unavailable-duration fallback. If a local poster image fails, the fallback leaves the timeline usable.
-- This demo uses still images and a simulated clock; it does not seek or play actual video. Visual frame previews, interval gestures, speed controls, and frame stepping remain in later phases or require unresolved product decisions.
-- Production build passed. Touch, pointer, keyboard, and failure-state browser checks remain outstanding.
+- The standalone Reels demo uses a native range input to seek real bundled MP4 files; duration and position come from video metadata and playback events.
+- Visited-profile Reels currently use the browser's native video controls. A shared custom P0 slider has not yet been integrated on that profile surface.
+- No frame previews, video-area interval gestures, persistent speed options, or frame stepping are implemented here. Touch emulation was reported as working by the user; this audit has not independently runtime-verified it.
+- The production build previously passed. Re-run build and focused checks after this integration before treating it as verified.

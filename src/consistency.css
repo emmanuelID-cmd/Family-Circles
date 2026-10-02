@@ -37,6 +37,13 @@
 .bottom-nav button.active{color:var(--accent);font-weight:800}
 .bottom-nav .person-avatar{display:grid;width:23px;height:23px;margin:0;border-radius:50%;place-items:center}
 .bottom-nav .person-avatar{grid-column:auto;grid-row:auto;font-size:10px}
+.account-profile-avatar-link{display:grid;grid-column:1;grid-row:1;place-items:center;width:44px;height:44px;margin-left:27px;border-radius:50%;text-decoration:none}
+.account-profile-avatar-link>.person-avatar{grid-column:auto;grid-row:auto;margin:0}
+.relationship-row .account-profile-avatar-link,.suggested-row .account-profile-avatar-link{grid-column:2;grid-row:1;width:42px;height:42px;margin:0}
+.person-profile-link{color:inherit;text-decoration:none}
+.person-profile-link:hover{text-decoration:underline;text-underline-offset:2px}
+.person-profile-handle{color:var(--muted)}
+.account-profile-avatar-link:focus-visible,.person-profile-link:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .story-avatar-button{position:relative;display:grid;place-items:center;flex:0 0 88px;width:88px;height:88px;padding:4px;border:0;border-radius:50%;background:transparent;cursor:pointer}
 .story-avatar-button>.person-avatar{width:100%;height:100%;font-size:24px}
 .person-avatar.has-story::after{content:"";position:absolute;inset:-3px;border:2px solid #ff704d;border-radius:50%;pointer-events:none}

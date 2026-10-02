@@ -1,33 +1,35 @@
-# Phase 5 — Video Synthetic Feed Harness
+# Phase 5 — Synthetic Profile Reels Harness
 
 ## Scope
 
-Create a synthetic Home feed used only to demonstrate the Video Time-Slider.
+Integrate the existing local MP4 demo clips into synthetic users' Reels sections on the shared visited-profile page, so Phase 6 can demonstrate the Video Time-Slider against real video media.
 
 ## Work
 
-- Add a Home/feed surface using still images inside synthetic video windows.
-- Support synthetic post, collage, live, and Story variants.
-- Generate durations from the approved bands: 10–30, 31–60, 61–120, and 120–300 seconds.
-- Label behavior as prototype-local; do not integrate a real social platform.
+- Place the existing local MP4 clips in each eligible synthetic user's profile; never assign these clips to the host user's profile.
+- Resolve every synthetic user's name, username, and avatar links to that same user's visited profile.
+- Assign a deterministic subset of one to ten available local clips by stable synthetic account ID, so the same profile retains its assignment across renders.
+- Use the existing shared visited-profile page as the canonical profile surface; do not merge the standalone branch wholesale.
+- Keep the demo local to this application; do not integrate with a real social platform.
 
 ## Acceptance criteria
 
-- Synthetic media can be opened in the video surface used by the slider.
-- Duration metadata is deterministic or inspectably generated from the approved bands.
-- Still-image media remains usable as a slider demonstration.
-- Feed construction is separate from Circles availability and deactivation logic.
+- Each synthetic profile displays only its assigned local MP4 clips in Reels and can play them with current browser controls.
+- Assignments are stable per account ID, unique within a profile, and reference existing local assets.
+- Navigating from different synthetic users opens their individual profile identity, not a shared universal profile.
+- Host-user profile remains free of these synthetic demo clips.
 
 ## Out of scope
 
-- Real feed synchronization, real availability claims, external media, and unresolved long-video policy.
+- Home-feed construction, still-image video simulation, posts, collages, live, and Stories.
+- Real feed synchronization, external media, and real social-platform integration.
 
 ## Validation
 
-Browser verification of each synthetic media type, duration band, loading, empty, and error state.
+- Verify profile identity and per-user clip assignment, all local media URLs, playback, mobile layout, and the no-clips fallback. Confirm the host profile does not receive synthetic clips.
 
 ## Implementation progress — 2026-10-01
 
-- Added a prototype-local Reels feed with post-video, collage, live-replay, and Circle Story samples. It is independent of Circle membership and availability state.
-- The four deterministic durations are 26, 48, 96, and 180 seconds, covering each approved duration band. Local still-image assets are used; there is no real video or social-platform connection.
-- The synthetic feed is available from the Reels bottom-navigation item. A separate Home feed is still out of scope for this implementation slice.
+- The standalone `#/reels` demo uses bundled MP4 files and remains available separately from visited user profiles.
+- Visited synthetic profiles receive a stable, deterministic subset of local MP4 clips based on profile ID. The host profile is not assigned these clips.
+- This is app-local demo content; it does not connect to a real social platform or external media feed.

@@ -39,9 +39,10 @@ what was pushed since the previously recorded baseline.
 
 ## Current verified baseline
 
-- Active branch: `Family-Manny`
-- The last verified published baseline is `864c837` on `origin/Family-Manny`.
-- `main` includes PR #5 through squash merge commit `53fa645`; PR #6 remains merged in the main history.
+- Active local integration branch: `feat/profile-reels-integration`; its profile-Reels changes remain staged/local and are not part of the published sync.
+- Verified shared baseline: `main` at `a600024`, `Family-Manny` at `e9c6a5c`, `Family-Crystal` at `6e3065c`, and `Family-Mo` at `f4163b2`.
+- `Family-Manny` and `Family-Crystal` now include the latest `main` tree. `Family-Mo` includes that baseline plus its newer Reels duration-handler fix in `src/pages/ReelsTimeframe.jsx`.
+- PR #8 remains open; after the branch sync GitHub reported it mergeable with validation and preview checks passing.
 - PR #3 is merged. The branch was rebuilt as a linear history preserving the
   three distinct feature commits; its file tree matched the pre-rebuild tree
   exactly (`08cc1b2de36bf173b42b43afb42785dac9192124`).
@@ -59,6 +60,17 @@ what was pushed since the previously recorded baseline.
 
 All push entries below are ordered by date and time in descending order: the
 newest changes appear first, followed by progressively older entries.
+
+## 2026-10-01T15:58:24-04:00
+
+- Atomically synchronized `Family-Manny` (`f87b3de..e9c6a5c`) and
+  `Family-Crystal` (`ae03e80..6e3065c`) with `main` at `a600024`. The only
+  merge conflict was in `docs/TEAM-REFERENCE.md`; both branches' push history
+  was retained. GitHub confirmed both resulting branch refs. Validation:
+  merge previews were clean except for that documented conflict, and
+  `git diff --check` passed. No new application behavior was added.
+- Timestamp is the local post-push verification time, not a GitHub push-event
+  timestamp.
 
 ## 2026-10-01T08:27:15-04:00
 
