@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ProfileMediaGrid from "../components/ProfileMediaGrid.jsx";
 import "./UserProfile.css";
 
 function PlaceholderAvatar({ className = "", src }) {
@@ -12,7 +13,6 @@ function BackIcon() {
 export default function UserProfile({ profile, onBack }) {
   const [following, setFollowing] = useState(false);
   const [messageNotice, setMessageNotice] = useState("");
-  const [activeTab, setActiveTab] = useState("posts");
   const username = profile.username || "marko.was";
   const displayName = profile.name || "Marko Was";
   const reels = profile.reels || [];
@@ -51,21 +51,15 @@ export default function UserProfile({ profile, onBack }) {
       </div>
       {messageNotice && <p className="visited-profile-notice" role="status">{messageNotice}</p>}
 
-      <nav className="visited-profile-tabs" aria-label="Profile content">
-        <button type="button" className={activeTab === "posts" ? "selected" : ""} aria-pressed={activeTab === "posts"} onClick={() => setActiveTab("posts")}>Posts</button>
-        <button type="button" className={activeTab === "reels" ? "selected" : ""} aria-pressed={activeTab === "reels"} onClick={() => setActiveTab("reels")}>Reels</button>
-        <button type="button" disabled>Tagged</button>
-      </nav>
-      {activeTab === "reels" ? reels.length ? <section className="visited-profile-reels" aria-label={`${displayName}'s Reels`}>
-        {reels.map((reel) => <article className="visited-profile-reel" key={reel.id}>
-          <video controls playsInline preload="metadata" aria-label={`${reel.title} on ${displayName}'s profile`}>
-            <source src={reel.src} type="video/mp4" />
-            Your browser does not support video playback.
-          </video>
-          <p>{reel.title}</p>
-        </article>)}
-      </section> : <section className="visited-profile-empty" aria-label="Reels"><div aria-hidden="true">▻</div><p>No Reels are available for this profile.</p></section>
-        : <section className="visited-profile-empty" aria-label="Posts"><div aria-hidden="true">▦</div><p>No posts are available in this prototype.</p></section>}
+      <ProfileMediaGrid
+        items={{ reels }}
+        emptyMessages={{
+          posts: "No posts are available in this prototype.",
+          reels: "No Reels are available for this profile.",
+          reposts: "No reposts are available in this prototype.",
+          tagged: "No tagged photos or videos are available in this prototype.",
+        }}
+      />
     </div>
   </main>;
 }

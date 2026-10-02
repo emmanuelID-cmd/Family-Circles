@@ -25,16 +25,4 @@
 .visited-profile-follow.is-following{background:#282a2e;color:#e5e6ea}
 .visited-profile-message{background:#282a2e;color:#f5f5f7}
 .visited-profile-notice{margin:0 20px 16px;color:#c7c9d0;font-size:12px;text-align:center}
-.visited-profile-tabs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #292a2d;border-bottom:1px solid #292a2d}
-.visited-profile-tabs button{height:48px;border:0;border-bottom:2px solid transparent;background:transparent;color:#92949b;font:inherit;font-size:12px;font-weight:700;text-transform:uppercase}
-.visited-profile-tabs button.selected{border-bottom-color:#f5f5f7;color:#f5f5f7}
-.visited-profile-tabs button:disabled{cursor:default;opacity:.55}
-.visited-profile-empty{display:grid;justify-items:center;gap:12px;padding:70px 15px;color:#9b9da4;text-align:center}
-.visited-profile-empty>div{display:grid;place-items:center;width:54px;height:54px;border:1px solid #55575d;border-radius:50%;color:#f5f5f7;font-size:27px}
-.visited-profile-empty p{margin:0;font-size:13px}
-.visited-profile-reels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding-top:3px}
-.visited-profile-reel{min-width:0;margin:0;background:#151619}
-.visited-profile-reel video{display:block;width:100%;aspect-ratio:9/16;background:#000;object-fit:cover}
-.visited-profile-reel p{overflow:hidden;margin:0;padding:8px;color:#dedfe3;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:520px){.visited-profile-page{padding:0 12px 32px}.visited-profile-summary{grid-template-columns:106px 1fr;gap:18px;padding:26px 8px 18px}.visited-profile-main-avatar{width:102px;height:102px}.visited-profile-identity h2{margin-bottom:18px;font-size:17px}.visited-profile-stats{gap:7px}.visited-profile-stats span{font-size:11px}.visited-profile-stats strong{font-size:15px}.visited-profile-bio{padding-right:8px;padding-left:8px}.visited-profile-actions{padding-right:8px;padding-left:8px}}
-@media(max-width:520px){.visited-profile-reels{grid-template-columns:repeat(2,minmax(0,1fr))}}
