@@ -37,20 +37,16 @@ teammate by recording verified repository state and integration-relevant work.
 After each push by any collaborator, append a timestamped entry describing
 what was pushed since the previously recorded baseline.
 
-## Current verified baseline
+## Verified integration baseline (2026-10-03, after PR #12)
 
 - Active integration branch: `feat/profile-reels-integration`; its profile,
   avatar upload/cropping, shared media-grid, and synthetic-profile Reels work
   was published through `eda118f`; its PR into main is next.
-- Verified remote baseline: `main` at `6d8129f`, `Family-Manny` at `3a4b277`,
-  `Family-Crystal` at `912e7d7`, and `Family-Mo` at `18c99e1`.
+- At this baseline, `main` was `4f63bcd` and the three teammate branches were
+  synchronized to its file tree after PR #12.
 - PR #8 is merged into `main` as `80cec31`; PR #10 supplies the Reels
   expiration countdown and video-load fix at `18e8aac`. PRs #3 through #7
   and #9 also remain merged. PR #11 is merged into `main` at `6d8129f`.
-- Active branch tips are `Family-Manny` at `3a4b277`, `Family-Crystal` at
-  `912e7d7`, `Family-Mo` at `18c99e1`, and
-  `feat/profile-reels-integration` at `ca05416`. All five active remote refs,
-  including `main`, have the same tree `4d24c8e6598c22403556c0eb6f6a66d81ed64f4f`.
 - PR #3 is merged. The branch was rebuilt as a linear history preserving the
   three distinct feature commits; its file tree matched the pre-rebuild tree
   exactly (`08cc1b2de36bf173b42b43afb42785dac9192124`).
@@ -69,6 +65,17 @@ what was pushed since the previously recorded baseline.
 
 All push entries below are ordered by date and time in descending order: the
 newest changes appear first, followed by progressively older entries.
+
+## 2026-10-03T19:21:48-04:00
+
+- Resynchronized `Family-Manny` (`3a4b277..4e5fdbb`), `Family-Crystal`
+  (`912e7d7..0548310`), and `Family-Mo` (`18c99e1..5c75c3e`) after PR #12
+  updated the shared Team Reference. Each branch merged the same `main`
+  commit and preserved its prior history. Verified their trees match
+  `main` at `4f63bcd`, as well as the integration branch. No application
+  files changed.
+- Timestamp is the local verification time, not an independently verified
+  GitHub push-event timestamp.
 
 ## 2026-10-03T19:15:17-04:00
 
