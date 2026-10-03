@@ -112,7 +112,9 @@ export default function ManagedAccountNameEditor({ accountId, profile, returnFoc
     ? `You can change either name again after ${formatDate(plan.value.nextEligibleAt)}.`
     : cooldownActive
       ? `A name change is active. You can change either name again after ${formatDate(expiry)}.`
-      : "Name changes are available now. Changing either field starts one shared 30-day cooldown for both fields.";
+      : plan.value?.status === "change"
+        ? `Changing either field starts one shared 30-day cooldown for both fields. If you save, the next eligible date is ${formatDate(plan.value.nextEligibleAt)}.`
+        : "Name changes are available now. Changing either field starts one shared 30-day cooldown for both fields.";
 
   return <dialog open className="modal" aria-modal="true" aria-labelledby="managed-name-title" aria-describedby="managed-name-guidance">
     <form className="modal-form" onSubmit={submit}>
