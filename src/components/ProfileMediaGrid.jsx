@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import VideoTimeSlider from "./VideoTimeSlider.jsx";
 import "./ProfileMediaGrid.css";
 
 const PAGE_SIZE = 50;
@@ -21,11 +22,43 @@ function isVideo(item) {
   return item.type === "video" || /\.(mp4|webm|mov)(?:$|\?)/i.test(item.src || "");
 }
 
+function ProfileVideo({ item, label }) {
+  const videoRef = useRef(null);
+  const [duration, setDuration] = useState(0);
+  const [position, setPosition] = useState(0);
+  const [unavailable, setUnavailable] = useState(false);
+
+  const seek = (nextPosition) => {
+    const video = videoRef.current;
+    if (!video || unavailable) return;
+    video.currentTime = nextPosition;
+    setPosition(nextPosition);
+  };
+
+  return <div className="profile-media-video">
+    <video
+      ref={videoRef}
+      src={item.src}
+      controls
+      playsInline
+      preload="metadata"
+      aria-label={label}
+      onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+      onDurationChange={(event) => setDuration(event.currentTarget.duration)}
+      onTimeUpdate={(event) => setPosition(event.currentTarget.currentTime)}
+      onSeeked={(event) => setPosition(event.currentTarget.currentTime)}
+      onError={() => setUnavailable(true)}
+    />
+    {unavailable && <p className="profile-media-video-error" role="status">Video unavailable. Other profile media remains accessible.</p>}
+    <VideoTimeSlider duration={duration} position={position} onSeek={seek} label={label} unavailable={unavailable} />
+  </div>;
+}
+
 function MediaTile({ item, tabLabel }) {
   const label = item.title || `${tabLabel} item`;
-  return <article className="profile-media-tile">
+  return <article className={`profile-media-tile${isVideo(item) ? " profile-media-tile-video" : ""}`}>
     {isVideo(item)
-      ? <video src={item.src} controls playsInline preload="metadata" aria-label={label} />
+      ? <ProfileVideo key={item.src} item={item} label={label} />
       : item.src
         ? <img src={item.src} alt={label} loading="lazy" />
         : <div className="profile-media-tile-placeholder" role="img" aria-label={label}>{label}</div>}

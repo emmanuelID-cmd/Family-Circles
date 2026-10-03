@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import VideoTimeSlider from "../components/VideoTimeSlider.jsx";
 import "./ReelsTimeframe.css";
 
 const mediaItems = Array.from({ length: 10 }, (_, index) => {
@@ -127,8 +128,7 @@ function TimeframePlayer({ item, onBack }) {
     }
   };
 
-  const seek = (event) => {
-    const nextPosition = Number(event.target.value);
+  const seek = (nextPosition) => {
     if (videoRef.current) videoRef.current.currentTime = nextPosition;
     setPosition(nextPosition);
   };
@@ -175,10 +175,7 @@ function TimeframePlayer({ item, onBack }) {
       <span className="timeframe-type-badge">{item.type}</span>
     </div>
     <div className="timeframe-controls">
-      <div className="timeframe-clock"><output aria-label="Current video time" aria-live="off">{formatTime(position)}</output><span aria-label="Video duration">{durationValid ? formatTime(duration) : "--:--"}</span></div>
-      {durationValid ? <label className="timeframe-slider-label">Video position
-        <input className="timeframe-slider" type="range" min="0" max={duration} step="any" value={Math.min(position, duration)} aria-label="Video position" aria-valuetext={`${formatTime(position)} of ${formatTime(duration)}`} onChange={seek} style={{ "--timeframe-progress": `${(position / duration) * 100}%` }} />
-      </label> : <p className="timeframe-fallback">The timeline will appear when the video loads.</p>}
+      <VideoTimeSlider duration={duration} position={position} onSeek={seek} label={item.title} unavailable={videoUnavailable} />
       {durationValid && duration > 15 && <div className="timeframe-skip-controls" aria-label="Skip controls">
         <button type="button" onClick={() => seekBy(-15)} aria-label="Rewind 15 seconds">↶ 15s</button>
         <button type="button" onClick={() => seekBy(15)} aria-label="Fast forward 15 seconds">15s ↷</button>
