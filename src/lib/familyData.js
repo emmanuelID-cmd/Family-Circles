@@ -66,7 +66,7 @@ const syntheticPeople = Array.from({ length: 132 }, (_, index) => {
   };
 });
 
-function toPerson(row, index, membershipRows, followingRows = [], accountState = null, useLegacyState = false) {
+export function toPerson(row, index, membershipRows, followingRows = [], accountState = null, useLegacyState = false) {
   const state = accountState || (useLegacyState ? {
     account_follows_person: row.host_follows,
     person_follows_account: row.follows_host,
@@ -304,7 +304,7 @@ export async function blockPeople(accountId, ids) {
 export async function replaceCircleMemberships(accountId, ids, draft, people) {
   const changes = ids.map((personId) => {
     const current = new Set(people.find((person) => person.id === personId)?.circles || []);
-    const next = new Set(draft[personId] || []);
+    const next = new Set(draft[personId] ?? current);
     return { personId, removed: [...current].filter((circleId) => !next.has(circleId)), added: [...next].filter((circleId) => !current.has(circleId)) };
   });
   for (const { personId, removed } of changes) if (removed.length) unwrap(await supabase.from("circle_members").delete().eq("account_id", accountId).eq("person_id", personId).in("circle_id", removed).select("person_id"));
