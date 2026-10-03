@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import test from "node:test";
 import { getProfileReels } from "./profileReels.js";
 
@@ -20,4 +21,13 @@ test("limits each profile to a unique subset of the ten local clips", () => {
 test("returns no clips when no stable profile ID is provided", () => {
   assert.deepEqual(getProfileReels(""), []);
   assert.deepEqual(getProfileReels(null), []);
+});
+
+test("every assigned demo clip resolves to a checked-in local MP4", () => {
+  for (const profileId of ["profile-123", "profile-456", "synthetic-user-42"]) {
+    for (const clip of getProfileReels(profileId)) {
+      const asset = new URL(`../../public${clip.src}`, import.meta.url);
+      assert.equal(existsSync(asset), true, `${clip.src} is missing`);
+    }
+  }
 });
