@@ -42,12 +42,15 @@ what was pushed since the previously recorded baseline.
 - Active integration branch: `feat/profile-reels-integration`; its profile,
   avatar upload/cropping, shared media-grid, and synthetic-profile Reels work
   was published through `eda118f`; its PR into main is next.
-- Verified remote baseline: `main` at `80cec31`, `Family-Manny` at `b289232`,
-  `Family-Crystal` at `6e3065c`, and `Family-Mo` at `09bb766`.
+- Verified remote baseline: `main` at `6d8129f`, `Family-Manny` at `3a4b277`,
+  `Family-Crystal` at `912e7d7`, and `Family-Mo` at `18c99e1`.
 - PR #8 is merged into `main` as `80cec31`; PR #10 supplies the Reels
   expiration countdown and video-load fix at `18e8aac`. PRs #3 through #7
-  and #9 also remain merged. Teammate synchronization is pending this
-  integration's validation and PR merge.
+  and #9 also remain merged. PR #11 is merged into `main` at `6d8129f`.
+- Active branch tips are `Family-Manny` at `3a4b277`, `Family-Crystal` at
+  `912e7d7`, `Family-Mo` at `18c99e1`, and
+  `feat/profile-reels-integration` at `ca05416`. All five active remote refs,
+  including `main`, have the same tree `4d24c8e6598c22403556c0eb6f6a66d81ed64f4f`.
 - PR #3 is merged. The branch was rebuilt as a linear history preserving the
   three distinct feature commits; its file tree matched the pre-rebuild tree
   exactly (`08cc1b2de36bf173b42b43afb42785dac9192124`).
@@ -66,6 +69,19 @@ what was pushed since the previously recorded baseline.
 
 All push entries below are ordered by date and time in descending order: the
 newest changes appear first, followed by progressively older entries.
+
+## 2026-10-03T19:15:17-04:00
+
+- Merged PR #11 into `main` as squash commit `6d8129f` after GitHub rejected
+  merge-commit mode. Synchronized `Family-Manny` (`b289232..3a4b277`),
+  `Family-Crystal` (`6e3065c..912e7d7`), and `Family-Mo`
+  (`09bb766..18c99e1`) with merge commits from main. Verified that `main`, all
+  three teammate branches, and `feat/profile-reels-integration` have identical
+  file trees. No files were deleted or discarded.
+- Also pushed the Team Reference follow-up on `feat/profile-reels-integration`
+  (`eda118f..ca05416`).
+- Timestamp is the local verification time, not an independently verified
+  GitHub push-event timestamp.
 
 ## 2026-10-03T19:07:55-04:00
 
@@ -125,16 +141,6 @@ newest changes appear first, followed by progressively older entries.
   authenticated local name-change/cooldown validation, and successful browser
   review. Hosted Supabase was not modified; no merge was performed.
 - GitHub push-event metadata verified the timestamp and commit range.
-
-## 2026-09-30T15:38:03-04:00
-
-- `Family-Manny`: `ce70590` → `28be5b0` (`ce70590..28be5b0`). Reconciled
-  `docs/TEAM-REFERENCE.md` with `origin/main` after PR #5’s squash merge so
-  PR #7 could merge cleanly. No application behavior changed. Validation:
-  conflict markers were removed, whitespace checks passed, and the push
-  succeeded. PR #7 subsequently merged into `main` as `ef83f14`.
-- Timestamp is the local verification time, not an independently verified
-  GitHub push-event timestamp.
 
 ## 2026-09-30T15:33:24-04:00
 
