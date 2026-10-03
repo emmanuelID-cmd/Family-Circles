@@ -4,7 +4,6 @@ import ReelsTimeframe from "./pages/ReelsTimeframe.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import { createManagedAccount, ensureProfileAvatar, loadFamilyData, loadManagedAccounts } from "./lib/familyData.js";
 import { getUserProfileRoute } from "./lib/profileRoute.js";
-import { getProfileReels } from "./lib/profileReels.js";
 import { supabase } from "./lib/supabase.js";
 
 function AuthForm() {
@@ -192,25 +191,19 @@ export default function App() {
   if (userProfileUsername) {
     const person = workspace.people.find((item) => item.username.toLowerCase() === userProfileUsername.toLowerCase());
     const profile = person ? {
-      id: person.id,
       username: person.username,
       name: person.name,
-      avatarUrl: person.avatarUrl,
       posts: person.posts,
       followers: person.followers,
       followingCount: person.following,
       bio: person.bio,
-      reels: getProfileReels(person.id),
     } : {
-      id: null,
       username: userProfileUsername,
       name: userProfileUsername === "marko.was" ? "Marko Was" : "User profile",
       posts: userProfileUsername === "marko.was" ? "250" : "0",
       followers: userProfileUsername === "marko.was" ? "683" : "0",
       followingCount: userProfileUsername === "marko.was" ? "1,062" : "0",
       bio: userProfileUsername === "marko.was" ? "Fashion. AI models. Infinite looks." : "Profile preview",
-      avatarUrl: null,
-      reels: [],
     };
     return <UserProfile profile={profile} onBack={() => { window.location.hash = "/"; }} />;
   }
