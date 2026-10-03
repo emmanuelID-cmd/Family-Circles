@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import VideoScrubPreview from "./VideoScrubPreview.jsx";
 import VideoTimeSlider from "./VideoTimeSlider.jsx";
 import "./ProfileMediaGrid.css";
 
@@ -27,6 +28,8 @@ function ProfileVideo({ item, label }) {
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
   const [unavailable, setUnavailable] = useState(false);
+  const [scrubbing, setScrubbing] = useState(false);
+  const previewSrc = /^\/assets\/reel-(0[1-9]|10)\.mp4$/.test(item.src || "") ? item.src : null;
 
   const seek = (nextPosition) => {
     const video = videoRef.current;
@@ -47,10 +50,11 @@ function ProfileVideo({ item, label }) {
       onDurationChange={(event) => setDuration(event.currentTarget.duration)}
       onTimeUpdate={(event) => setPosition(event.currentTarget.currentTime)}
       onSeeked={(event) => setPosition(event.currentTarget.currentTime)}
-      onError={() => setUnavailable(true)}
+      onError={() => { setUnavailable(true); setScrubbing(false); }}
     />
     {unavailable && <p className="profile-media-video-error" role="status">Video unavailable. Other profile media remains accessible.</p>}
-    <VideoTimeSlider duration={duration} position={position} onSeek={seek} label={label} unavailable={unavailable} />
+    <VideoScrubPreview src={previewSrc} time={position} duration={duration} active={scrubbing && !unavailable} />
+    <VideoTimeSlider duration={duration} position={position} onSeek={seek} onScrubbingChange={setScrubbing} label={label} unavailable={unavailable} />
   </div>;
 }
 

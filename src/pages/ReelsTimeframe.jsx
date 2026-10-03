@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import VideoScrubPreview from "../components/VideoScrubPreview.jsx";
 import VideoTimeSlider from "../components/VideoTimeSlider.jsx";
 import "./ReelsTimeframe.css";
 
@@ -96,6 +97,7 @@ function TimeframePlayer({ item, onBack }) {
   const [duration, setDuration] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [videoUnavailable, setVideoUnavailable] = useState(false);
+  const [scrubbing, setScrubbing] = useState(false);
   const durationValid = Number.isFinite(duration) && duration > 0;
   const videoUrl = `/assets/${encodeURIComponent(item.file)}`;
 
@@ -104,6 +106,7 @@ function TimeframePlayer({ item, onBack }) {
     setDuration(0);
     setPlaying(false);
     setVideoUnavailable(false);
+    setScrubbing(false);
   }, [item]);
 
   useEffect(() => {
@@ -164,7 +167,7 @@ function TimeframePlayer({ item, onBack }) {
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onEnded={() => setPlaying(false)}
-        onError={() => setVideoUnavailable(true)}
+        onError={() => { setVideoUnavailable(true); setScrubbing(false); }}
         onClick={togglePlayback}
         onKeyDown={handleVideoKeyDown}
         tabIndex="0"
@@ -175,7 +178,8 @@ function TimeframePlayer({ item, onBack }) {
       <span className="timeframe-type-badge">{item.type}</span>
     </div>
     <div className="timeframe-controls">
-      <VideoTimeSlider duration={duration} position={position} onSeek={seek} label={item.title} unavailable={videoUnavailable} />
+      <VideoScrubPreview src={videoUrl} time={position} duration={duration} active={scrubbing && !videoUnavailable} />
+      <VideoTimeSlider duration={duration} position={position} onSeek={seek} onScrubbingChange={setScrubbing} label={item.title} unavailable={videoUnavailable} />
       {durationValid && duration > 15 && <div className="timeframe-skip-controls" aria-label="Skip controls">
         <button type="button" onClick={() => seekBy(-15)} aria-label="Rewind 15 seconds">↶ 15s</button>
         <button type="button" onClick={() => seekBy(15)} aria-label="Fast forward 15 seconds">15s ↷</button>

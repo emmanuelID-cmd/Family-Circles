@@ -33,6 +33,7 @@
 .timeframe-live-badge{right:14px;background:#d84343}
 .timeframe-center-play{position:relative;z-index:2;display:grid;place-items:center;width:58px;height:58px;border:1px solid #ffffff66;border-radius:50%;background:#0008;color:white;font-size:20px;cursor:pointer}
 .timeframe-controls{padding:17px 4px 8px}
+.timeframe-controls .video-scrub-preview{margin:0 auto 10px}
 .timeframe-play-button:disabled{opacity:.5;cursor:not-allowed}
 .timeframe-skip-controls{display:flex;justify-content:center;gap:12px;margin:0 0 12px}
 .timeframe-skip-controls button{border:1px solid #41434a;border-radius:8px;background:#202126;color:#f4f4f6;padding:8px 13px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
