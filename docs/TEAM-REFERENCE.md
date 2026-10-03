@@ -41,8 +41,7 @@ what was pushed since the previously recorded baseline.
 
 - Active integration branch: `feat/profile-reels-integration`; its profile,
   avatar upload/cropping, shared media-grid, and synthetic-profile Reels work
-  was already published through `cce8b18`. The current main integration is
-  local until its push is verified.
+  was published through `eda118f`; its PR into main is next.
 - Verified remote baseline: `main` at `80cec31`, `Family-Manny` at `b289232`,
   `Family-Crystal` at `6e3065c`, and `Family-Mo` at `09bb766`.
 - PR #8 is merged into `main` as `80cec31`; PR #10 supplies the Reels
@@ -67,6 +66,22 @@ what was pushed since the previously recorded baseline.
 
 All push entries below are ordered by date and time in descending order: the
 newest changes appear first, followed by progressively older entries.
+
+## 2026-10-03T19:07:55-04:00
+
+- Pushed `feat/profile-reels-integration` from `cce8b18` to `eda118f`
+  (`cce8b18..eda118f`). This integrates the host/visited profile media grid,
+  avatar upload and crop, synthetic-profile Reels, main's Reels expiration
+  fix, and the preserved Manny, Crystal, and Mo commit histories. The tracked
+  Crystal branch snapshot and reference assets remain included for the later
+  dependency-hygiene review.
+- Validation before push: 24 Node tests and production build passed; local
+  browser checks covered profile routing, settings, mobile three-column grid,
+  JPEG crop output, video playback/seeking, and countdown; no browser console
+  errors. `git diff --check` reports pre-existing trailing whitespace in the
+  imported archived HTML snapshot; no whitespace was changed in that snapshot.
+- Timestamp is the local push verification time, not an independently
+  verified GitHub push-event timestamp.
 
 ## 2026-10-01T15:58:24-04:00
 
