@@ -39,18 +39,25 @@ what was pushed since the previously recorded baseline.
 
 ## Current verified baseline
 
-- Active branch: `Family-Manny`
-- The last verified published baseline is `864c837` on `origin/Family-Manny`.
-- `main` includes PR #5 through squash merge commit `53fa645`; PR #6 remains merged in the main history.
+- Active integration branch: `feat/profile-reels-integration`; its profile,
+  avatar upload/cropping, shared media-grid, and synthetic-profile Reels work
+  was published through `eda118f`; its PR into main is next.
+- Verified remote baseline: `main` at `80cec31`, `Family-Manny` at `b289232`,
+  `Family-Crystal` at `6e3065c`, and `Family-Mo` at `09bb766`.
+- PR #8 is merged into `main` as `80cec31`; PR #10 supplies the Reels
+  expiration countdown and video-load fix at `18e8aac`. PRs #3 through #7
+  and #9 also remain merged. Teammate synchronization is pending this
+  integration's validation and PR merge.
 - PR #3 is merged. The branch was rebuilt as a linear history preserving the
   three distinct feature commits; its file tree matched the pre-rebuild tree
   exactly (`08cc1b2de36bf173b42b43afb42785dac9192124`).
 - Local recovery ref `recovery/Family-Manny-before-linear` retains the prior
   tip `9c34ea39394b4692f0de7c457c3bee29a113e1fa`.
-- `Family-Circles.code-workspace` remains an intentionally untracked local
-  workspace file.
-- Deferred back-arrow changes in `src/Dashboard.jsx` and `src/consistency.css`
-  are local and have not been pushed.
+- `Family-Circles.code-workspace`, reference images, and the
+  `.branch-sync-20261001/Family-Crystal` snapshot were explicitly tracked in
+  `cce8b18`; their later dependency-hygiene review remains separate.
+- Shared back-arrow styling was published in `ccc0ef5`; the earlier
+  position/alignment issue remains deferred unless separately verified.
 - The local, ignored `docs/TEAM-REFERENCE-CHANGE.md` retains the detailed
   teammate handoff from baseline `c92fa38779b24f40d1eb1b152ef152511a5a290e`;
   preserve its local-only tracking policy.
@@ -59,6 +66,54 @@ what was pushed since the previously recorded baseline.
 
 All push entries below are ordered by date and time in descending order: the
 newest changes appear first, followed by progressively older entries.
+
+## 2026-10-03T19:07:55-04:00
+
+- Pushed `feat/profile-reels-integration` from `cce8b18` to `eda118f`
+  (`cce8b18..eda118f`). This integrates the host/visited profile media grid,
+  avatar upload and crop, synthetic-profile Reels, main's Reels expiration
+  fix, and the preserved Manny, Crystal, and Mo commit histories. The tracked
+  Crystal branch snapshot and reference assets remain included for the later
+  dependency-hygiene review.
+- Validation before push: 24 Node tests and production build passed; local
+  browser checks covered profile routing, settings, mobile three-column grid,
+  JPEG crop output, video playback/seeking, and countdown; no browser console
+  errors. `git diff --check` reports pre-existing trailing whitespace in the
+  imported archived HTML snapshot; no whitespace was changed in that snapshot.
+- Timestamp is the local push verification time, not an independently
+  verified GitHub push-event timestamp.
+
+## 2026-10-01T15:58:24-04:00
+
+- Atomically synchronized `Family-Manny` (`f87b3de..e9c6a5c`) and
+  `Family-Crystal` (`ae03e80..6e3065c`) with `main` at `a600024`. The only
+  merge conflict was in `docs/TEAM-REFERENCE.md`; both branches' push history
+  was retained. GitHub confirmed both resulting branch refs. Validation:
+  merge previews were clean except for that documented conflict, and
+  `git diff --check` passed. No new application behavior was added.
+- Timestamp is the local post-push verification time, not a GitHub push-event
+  timestamp.
+
+## 2026-10-01T12:01:20-04:00
+
+- `Family-Manny`: `f17ac6b` → `e01ed9c` (`f17ac6b..e01ed9c`). Integrated
+  `origin/main` at PR #7’s squash merge `ef83f14` and reconciled the Team
+  Reference baseline and merge history. The only file conflict was in
+  `docs/TEAM-REFERENCE.md`; its current baseline and prior push entries were
+  combined. Validation: no conflict markers remained, the staged whitespace
+  check passed, and the push succeeded. No application files changed.
+- Timestamp is the local verification time, not an independently verified
+  GitHub push-event timestamp.
+
+## 2026-09-30T15:38:03-04:00
+
+- `Family-Manny`: `ce70590` → `28be5b0` (`ce70590..28be5b0`). Reconciled
+  `docs/TEAM-REFERENCE.md` with `origin/main` after PR #5’s squash merge so
+  PR #7 could merge cleanly. No application behavior changed. Validation:
+  conflict markers were removed, whitespace checks passed, and the push
+  succeeded. PR #7 subsequently merged into `main` as `ef83f14`.
+- Timestamp is the local verification time, not an independently verified
+  GitHub push-event timestamp.
 
 ## 2026-10-01T08:27:15-04:00
 
@@ -70,6 +125,16 @@ newest changes appear first, followed by progressively older entries.
   authenticated local name-change/cooldown validation, and successful browser
   review. Hosted Supabase was not modified; no merge was performed.
 - GitHub push-event metadata verified the timestamp and commit range.
+
+## 2026-09-30T15:38:03-04:00
+
+- `Family-Manny`: `ce70590` → `28be5b0` (`ce70590..28be5b0`). Reconciled
+  `docs/TEAM-REFERENCE.md` with `origin/main` after PR #5’s squash merge so
+  PR #7 could merge cleanly. No application behavior changed. Validation:
+  conflict markers were removed, whitespace checks passed, and the push
+  succeeded. PR #7 subsequently merged into `main` as `ef83f14`.
+- Timestamp is the local verification time, not an independently verified
+  GitHub push-event timestamp.
 
 ## 2026-09-30T15:33:24-04:00
 

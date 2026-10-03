@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Circles - Clean Clone</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg-dark: #000000;
+      --card-bg: #121212;
+      --search-bg: #1c1c1e;
+      --border-color: #262626;
+      --text-main: #ffffff;
+      --text-sub: #a8a8a8;
+      --accent-blue: #0095f6;
+      --accent-blue-hover: #1877f2;
+      --btn-sec-bg: #262626;
+      --avatar-bg: #333333;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Custom scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 4px;
+    }
+
+    .tab-circle {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background-color: #555;
+      display: inline-block;
+      transition: background-color 0.2s ease;
+    }
+
+    .tab-item.active .tab-circle {
+      background-color: #ffffff;
+    }
+
+    /* Pulse effect for interactive elements */
+    .btn-touch {
+      transition: transform 0.1s ease, opacity 0.2s ease;
+    }
+    .btn-touch:active {
+      transform: scale(0.96);
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body class="flex justify-center min-h-screen">
+
+  <div class="w-full max-w-md bg-black min-h-screen border-x border-[#262626] flex flex-col relative pb-20">
+    
+    <!-- Top Status Bar -->
+    <div class="flex justify-between items-center px-5 py-3 text-xs font-semibold select-none text-white">
+      <span id="statusBarTime">9:41 AM</span>
+      <div class="flex items-center gap-1.5">
+        <span class="text-[9px] border border-white px-1 py-0.5 rounded font-bold uppercase tracking-wider">SOS</span>
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+          <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.57 10.57 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
+        </svg>
+        <div class="flex items-center border border-white/80 rounded-sm px-1 py-0.2 gap-0.5 text-[10px]">
+          <span>73%</span>
+          <div class="w-2.5 h-1.5 bg-white rounded-xs"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <div class="flex items-center justify-between px-4 py-2 border-b border-[#1c1c1e] relative">
+      <button class="back-btn text-white text-xl p-1 btn-touch" title="Back" onclick="showNotification('Navigated Back')">
+        &#10094;
+      </button>
+
+      <div class="flex items-center gap-1.5 cursor-pointer" onclick="editHeaderUsername()">
+        <span id="headerUsername" class="font-bold text-base tracking-tight text-white">[Your Username Here]</span>
+        <svg class="w-3.5 h-3.5 fill-gray-400" viewBox="0 0 20 20">
+          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+        </svg>
+      </div>
+
+      <button id="openAddModalBtn" class="text-white text-2xl font-light p-1 btn-touch" title="Add Member">
+        &#43;
+      </button>
+    </div>
+
+    <!-- Tabs Container -->
+    <div class="flex border-b border-[#262626] px-2 pt-2 gap-4 text-xs font-semibold overflow-x-auto">
+      <div class="tab-item active flex items-center gap-2 pb-3 px-2 cursor-pointer border-b-2 border-white text-white btn-touch" data-tab="followers">
+        <span class="tab-circle"></span>
+        <span><strong id="followersCount">5</strong> Followers</span>
+      </div>
+      <div class="tab-item flex items-center gap-2 pb-3 px-2 cursor-pointer border-b-2 border-transparent text-gray-400 btn-touch" data-tab="following">
+        <span class="tab-circle"></span>
+        <span><strong id="followingCount">3</strong> Following</span>
+      </div>
+      <div class="tab-item flex items-center gap-2 pb-3 px-2 cursor-pointer border-b-2 border-transparent text-gray-400 btn-touch" data-tab="subscriptions">
+        <span class="tab-circle"></span>
+        <span><strong id="subscriptionsCount">2</strong> Subscriptions</span>
+      </div>
+    </div>
+
+    <!-- Live Search Bar -->
+    <div class="px-4 pt-3 pb-1">
+      <div class="relative flex items-center">
+        <span class="absolute left-3 text-gray-400 text-sm">🔍</span>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Search username or display name" 
+          class="w-full bg-[#1c1c1e] text-white text-sm rounded-lg pl-9 pr-8 py-2 border border-transparent focus:border-[#333] outline-none placeholder-gray-500"
+        />
+        <button id="clearSearchBtn" class="absolute right-3 text-gray-400 text-xs hidden btn-touch" onclick="clearSearch()">✕</button>
+      </div>
+    </div>
+
+    <!-- Sort Header -->
+    <div class="flex justify-between items-center px-4 py-2 text-sm font-bold border-b border-[#121212]">
+      <span id="sortLabel" class="text-white">Sort by Default</span>
+      <button id="sortToggleBtn" class="flex items-center gap-1 text-gray-300 hover:text-white btn-touch text-xs font-normal bg-[#1c1c1e] px-2.5 py-1 rounded-md border border-[#262626]">
+        <span>Toggle Order</span>
+        <span id="sortIcon">&#8645;</span>
+      </button>
+    </div>
+
+    <!-- Members List -->
+    <div id="membersList" class="flex flex-col divide-y divide-[#121212] overflow-y-auto flex-grow">
+      <!-- Member Items injected dynamically via JavaScript -->
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-[#262626] text-white text-xs px-4 py-2 rounded-full shadow-lg opacity-0 transition-opacity pointer-events-none z-50">
+      Notification Text
+    </div>
+
+  </div>
+
+  <!-- Add / Edit Member Modal -->
+  <div id="modalOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-[#1c1c1e] border border-[#262626] rounded-xl w-full max-w-sm p-5 flex flex-col gap-4 text-white shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-base" id="modalTitle">Add New Member Placeholder</h3>
+        <button id="closeModalBtn" class="text-gray-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="flex flex-col gap-3 text-xs">
+        <div>
+          <label class="block text-gray-400 mb-1">Username / Display Name Placeholder</label>
+          <input type="text" id="newMemberName" placeholder="e.g. User Placeholder F" class="w-full bg-black border border-[#333] rounded-md p-2 text-white outline-none focus:border-[#0095f6]">
+        </div>
+
+        <div>
+          <label class="block text-gray-400 mb-1">Subtitle / Status Placeholder</label>
+          <input type="text" id="newMemberSub" placeholder="e.g. Subtitle placeholder text" class="w-full bg-black border border-[#333] rounded-md p-2 text-white outline-none focus:border-[#0095f6]">
+        </div>
+
+        <div>
+          <label class="block text-gray-400 mb-1">Action Button Type</label>
+          <select id="newMemberAction" class="w-full bg-black border border-[#333] rounded-md p-2 text-white outline-none focus:border-[#0095f6]">
+            <option value="follow">Follow back (Blue)</option>
+            <option value="following">Following (Dark Grey)</option>
+            <option value="message">Message (Dark Grey)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-gray-400 mb-1">Assign to Tab</label>
+          <select id="newMemberTab" class="w-full bg-black border border-[#333] rounded-md p-2 text-white outline-none focus:border-[#0095f6]">
+            <option value="followers">Followers Tab</option>
+            <option value="following">Following Tab</option>
+            <option value="subscriptions">Subscriptions Tab</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 mt-2">
+        <button id="cancelModalBtn" class="px-3 py-1.5 bg-[#262626] hover:bg-[#333] rounded-md text-xs font-semibold">Cancel</button>
+        <button id="saveMemberBtn" class="px-4 py-1.5 bg-[#0095f6] hover:bg-[#1877f2] rounded-md text-xs font-semibold">Save Member</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // System Data State (Clean generic placeholders without real images/names/categories)
+    let state = {
+      headerUsername: "[Your Username Here]",
+      currentTab: "followers",
+      searchQuery: "",
+      sortAscending: true,
+      members: [
+        { id: "1", name: "User Placeholder A", sub: "Profile text placeholder", action: "follow", tab: "followers" },
+        { id: "2", name: "User Placeholder B", sub: "Detail text placeholder", action: "follow", tab: "followers" },
+        { id: "3", name: "User Placeholder C", sub: "Detail text placeholder", action: "following", tab: "followers" },
+        { id: "4", name: "User Placeholder D", sub: "Detail text placeholder", action: "message", tab: "followers" },
+        { id: "5", name: "User Placeholder E", sub: "Detail text placeholder", action: "message", tab: "followers" },
+        { id: "6", name: "User Placeholder F", sub: "Profile text placeholder", action: "following", tab: "following" },
+        { id: "7", name: "User Placeholder G", sub: "Detail text placeholder", action: "message", tab: "following" },
+        { id: "8", name: "User Placeholder H", sub: "Detail text placeholder", action: "follow", tab: "following" },
+        { id: "9", name: "User Placeholder I", sub: "Subscription tier placeholder", action: "message", tab: "subscriptions" },
+        { id: "10", name: "User Placeholder J", sub: "Subscription tier placeholder", action: "message", tab: "subscriptions" }
+      ]
+    };
+
+    // DOM Elements
+    const membersList = document.getElementById("membersList");
+    const searchInput = document.getElementById("searchInput");
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
+    const sortToggleBtn = document.getElementById("sortToggleBtn");
+    const sortIcon = document.getElementById("sortIcon");
+    const sortLabel = document.getElementById("sortLabel");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const openAddModalBtn = document.getElementById("openAddModalBtn");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const cancelModalBtn = document.getElementById("cancelModalBtn");
+    const saveMemberBtn = document.getElementById("saveMemberBtn");
+
+    // Initialize clock
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      document.getElementById("statusBarTime").textContent = `${hours}:${minutes} ${ampm}`;
+    }
+    setInterval(updateClock, 10000);
+    updateClock();
+
+    // Standard Grey Avatar SVG Placeholder (NO Photos or Emojis)
+    function renderAvatar() {
+      return `
+        <div class="w-12 h-12 rounded-full bg-[#262626] flex items-center justify-center shrink-0 border border-[#333]">
+          <svg class="w-6 h-6 fill-[#666666]" viewBox="0 0 24 24">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
+      `;
+    }
+
+    // Render Members List
+    function render() {
+      membersList.innerHTML = "";
+
+      // Filter by current active tab & search query
+      let filtered = state.members.filter(m => {
+        const matchesTab = m.tab === state.currentTab;
+        const query = state.searchQuery.toLowerCase().trim();
+        const matchesSearch = query === "" || 
+                              m.name.toLowerCase().includes(query) || 
+                              m.sub.toLowerCase().includes(query);
+        return matchesTab && matchesSearch;
+      });
+
+      // Sort logic
+      filtered.sort((a, b) => {
+        if (state.sortAscending) {
+          return a.name.localeCompare(b.name);
+        } else {
+          return b.name.localeCompare(a.name);
+        }
+      });
+
+      // Tab Counts update
+      document.getElementById("followersCount").textContent = state.members.filter(m => m.tab === "followers").length;
+      document.getElementById("followingCount").textContent = state.members.filter(m => m.tab === "following").length;
+      document.getElementById("subscriptionsCount").textContent = state.members.filter(m => m.tab === "subscriptions").length;
+
+      if (filtered.length === 0) {
+        membersList.innerHTML = `
+          <div class="flex flex-col items-center justify-center p-12 text-center text-gray-500">
+            <div class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center mb-3">
+              <span class="text-xl">🔍</span>
+            </div>
+            <p class="text-sm font-semibold">No placeholders found</p>
+            <p class="text-xs text-gray-600 mt-1">Try searching for another term or add a new placeholder.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(member => {
+        const item = document.createElement("div");
+        item.className = "flex items-center justify-between px-4 py-3 hover:bg-[#0a0a0a] transition-colors";
+
+        // Button style logic based on status
+        let btnHtml = "";
+        if (member.action === "follow") {
+          btnHtml = `<button onclick="toggleMemberAction('${member.id}')" class="px-4 py-1.5 bg-[#0095f6] hover:bg-[#1877f2] text-white text-xs font-semibold rounded-lg btn-touch">Follow back</button>`;
+        } else if (member.action === "following") {
+          btnHtml = `<button onclick="toggleMemberAction('${member.id}')" class="px-4 py-1.5 bg-[#262626] hover:bg-[#333] text-white text-xs font-semibold rounded-lg border border-[#333] btn-touch">Following</button>`;
+        } else {
+          btnHtml = `<button onclick="showNotification('Message screen opened for ' + '${member.name}')" class="px-4 py-1.5 bg-[#262626] hover:bg-[#333] text-white text-xs font-semibold rounded-lg border border-[#333] btn-touch">Message</button>`;
+        }
+
+        item.innerHTML = `
+          <div class="flex items-center gap-3 overflow-hidden mr-2">
+            ${renderAvatar()}
+            <div class="flex flex-col min-w-0">
+              <span class="text-sm font-semibold text-white truncate leading-tight">${member.name}</span>
+              <span class="text-xs text-gray-400 truncate leading-tight mt-0.5">${member.sub}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            ${btnHtml}
+            <button onclick="removeMember('${member.id}')" class="text-gray-500 hover:text-red-400 p-1.5 text-xs btn-touch" title="Remove Member">
+              ✕
+            </button>
+          </div>
+        `;
+        membersList.appendChild(item);
+      });
+    }
+
+    // Toggle Action (Follow / Following)
+    window.toggleMemberAction = function(id) {
+      state.members = state.members.map(m => {
+        if (m.id === id) {
+          const newAction = m.action === "follow" ? "following" : "follow";
+          showNotification(`${m.name} is now ${newAction === "following" ? "followed" : "unfollowed"}`);
+          return { ...m, action: newAction };
+        }
+        return m;
+      });
+      render();
+    };
+
+    // Dynamic Member Removal
+    window.removeMember = function(id) {
+      const target = state.members.find(m => m.id === id);
+      state.members = state.members.filter(m => m.id !== id);
+      showNotification(`Removed ${target ? target.name : 'member'}`);
+      render();
+    };
+
+    // Header Username Editor
+    window.editHeaderUsername = function() {
+      const newName = prompt("Enter new header username placeholder:", state.headerUsername);
+      if (newName && newName.trim() !== "") {
+        state.headerUsername = newName.trim();
+        document.getElementById("headerUsername").textContent = state.headerUsername;
+        showNotification("Header username updated");
+      }
+    };
+
+    // Search Input Controller
+    searchInput.addEventListener("input", (e) => {
+      state.searchQuery = e.target.value;
+      if (state.searchQuery.length > 0) {
+        clearSearchBtn.classList.remove("hidden");
+      } else {
+        clearSearchBtn.classList.add("hidden");
+      }
+      render();
+    });
+
+    function clearSearch() {
+      searchInput.value = "";
+      state.searchQuery = "";
+      clearSearchBtn.classList.add("hidden");
+      render();
+    }
+
+    // Tab Switching
+    document.querySelectorAll(".tab-item").forEach(tabEl => {
+      tabEl.addEventListener("click", () => {
+        document.querySelectorAll(".tab-item").forEach(t => {
+          t.classList.remove("active", "border-white", "text-white");
+          t.classList.add("border-transparent", "text-gray-400");
+        });
+
+        tabEl.classList.add("active", "border-white", "text-white");
+        tabEl.classList.remove("border-transparent", "text-gray-400");
+
+        state.currentTab = tabEl.getAttribute("data-tab");
+        render();
+      });
+    });
+
+    // Sorting Toggle
+    sortToggleBtn.addEventListener("click", () => {
+      state.sortAscending = !state.sortAscending;
+      sortIcon.innerHTML = state.sortAscending ? "&#8645;" : "&#8646;";
+      sortLabel.textContent = state.sortAscending ? "Sort A-Z" : "Sort Z-A";
+      render();
+    });
+
+    // Modal Control
+    openAddModalBtn.addEventListener("click", () => {
+      document.getElementById("newMemberTab").value = state.currentTab;
+      modalOverlay.classList.remove("hidden");
+    });
+
+    function closeModal() {
+      modalOverlay.classList.add("hidden");
+      document.getElementById("newMemberName").value = "";
+      document.getElementById("newMemberSub").value = "";
+    }
+
+    closeModalBtn.addEventListener("click", closeModal);
+    cancelModalBtn.addEventListener("click", closeModal);
+
+    saveMemberBtn.addEventListener("click", () => {
+      const name = document.getElementById("newMemberName").value.trim() || "User Placeholder";
+      const sub = document.getElementById("newMemberSub").value.trim() || "Detail text placeholder";
+      const action = document.getElementById("newMemberAction").value;
+      const tab = document.getElementById("newMemberTab").value;
+
+      const newMember = {
+        id: Date.now().toString(),
+        name,
+        sub,
+        action,
+        tab
+      };
+
+      state.members.push(newMember);
+      showNotification(`Added ${name}`);
+      closeModal();
+      render();
+    });
+
+    // Helper Toast Notification
+    function showNotification(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.style.opacity = "1";
+      setTimeout(() => {
+        toast.style.opacity = "0";
+      }, 2000);
+    }
+
+    // Initial Application Render
+    render();
+  </script>
+</body>
+</html>

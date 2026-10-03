@@ -1,8 +1,9 @@
 import { useState } from "react";
+import ProfileMediaGrid from "../components/ProfileMediaGrid.jsx";
 import "./UserProfile.css";
 
-function PlaceholderAvatar({ className = "" }) {
-  return <span className={`user-profile-avatar ${className}`} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3.5" /><path d="M4.8 20c.7-3.4 3.1-5.2 7.2-5.2s6.5 1.8 7.2 5.2" /></svg></span>;
+function PlaceholderAvatar({ className = "", src }) {
+  return <span className={`user-profile-avatar ${className}`} aria-hidden="true">{src ? <img src={src} alt="" /> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3.5" /><path d="M4.8 20c.7-3.4 3.1-5.2 7.2-5.2s6.5 1.8 7.2 5.2" /></svg>}</span>;
 }
 
 function BackIcon() {
@@ -14,6 +15,7 @@ export default function UserProfile({ profile, onBack }) {
   const [messageNotice, setMessageNotice] = useState("");
   const username = profile.username || "marko.was";
   const displayName = profile.name || "Marko Was";
+  const reels = profile.reels || [];
 
   return <main className="visited-profile-page">
     <div className="visited-profile-shell">
@@ -24,7 +26,7 @@ export default function UserProfile({ profile, onBack }) {
       </header>
 
       <section className="visited-profile-summary" aria-label={`${displayName} profile`}>
-        <PlaceholderAvatar className="visited-profile-main-avatar" />
+        <PlaceholderAvatar className="visited-profile-main-avatar" src={profile.avatarUrl} />
         <div className="visited-profile-identity">
           <h2>{displayName}</h2>
           <div className="visited-profile-stats">
@@ -49,8 +51,15 @@ export default function UserProfile({ profile, onBack }) {
       </div>
       {messageNotice && <p className="visited-profile-notice" role="status">{messageNotice}</p>}
 
-      <nav className="visited-profile-tabs" aria-label="Profile content"><button type="button" className="selected" aria-current="page">Posts</button><button type="button" disabled>Reels</button><button type="button" disabled>Tagged</button></nav>
-      <section className="visited-profile-empty" aria-label="Posts"><div aria-hidden="true">▦</div><p>No posts are available in this prototype.</p></section>
+      <ProfileMediaGrid
+        items={{ reels }}
+        emptyMessages={{
+          posts: "No posts are available in this prototype.",
+          reels: "No Reels are available for this profile.",
+          reposts: "No reposts are available in this prototype.",
+          tagged: "No tagged photos or videos are available in this prototype.",
+        }}
+      />
     </div>
   </main>;
 }
