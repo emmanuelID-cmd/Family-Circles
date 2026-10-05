@@ -6,11 +6,11 @@ test("returns a stable clip assignment for the same profile ID", () => {
   assert.deepEqual(getProfileReels("profile-123"), getProfileReels("profile-123"));
 });
 
-test("limits each profile to a unique subset of the ten local clips", () => {
+test("returns all ten unique local clips for each profile", () => {
   const clips = getProfileReels("profile-456");
 
-  assert.ok(clips.length >= 1 && clips.length <= 10);
-  assert.equal(new Set(clips.map((clip) => clip.id)).size, clips.length);
+  assert.equal(clips.length, 10);
+  assert.equal(new Set(clips.map((clip) => clip.id)).size, 10);
   for (const clip of clips) {
     assert.match(clip.id, /^reel-(0[1-9]|10)$/);
     assert.match(clip.src, /^\/assets\/reel-(0[1-9]|10)\.mp4$/);
