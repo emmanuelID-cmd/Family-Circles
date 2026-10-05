@@ -14,7 +14,6 @@ export function getProfileReels(profileId) {
   if (!identity) return [];
 
   let seed = hashIdentity(identity);
-  const count = (seed % REEL_COUNT) + 1;
   const order = Array.from({ length: REEL_COUNT }, (_, index) => index + 1);
 
   for (let index = order.length - 1; index > 0; index -= 1) {
@@ -23,7 +22,7 @@ export function getProfileReels(profileId) {
     [order[index], order[swapIndex]] = [order[swapIndex], order[index]];
   }
 
-  return order.slice(0, count).map((number) => {
+  return order.map((number) => {
     const id = String(number).padStart(2, "0");
     return {
       id: `reel-${id}`,
