@@ -9,7 +9,7 @@ const previousKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 process.env.VITE_SUPABASE_URL = "https://example.supabase.co";
 process.env.VITE_SUPABASE_PUBLISHABLE_KEY = "test-only-publishable-key";
 const server = await createServer({ configFile: false, server: { middlewareMode: true, hmr: false }, appType: "custom" });
-const { toPerson, replaceCircleMemberships } = await server.ssrLoadModule("/src/lib/familyData.js");
+const { toPerson, replaceCircleMemberships, syntheticPeople, getSyntheticNameChangeCue } = await server.ssrLoadModule("/src/lib/familyData.js");
 const { supabase } = await server.ssrLoadModule("/src/lib/supabase.js");
 const originalFrom = supabase.from;
 
@@ -90,6 +90,28 @@ test("current labels retain stable avatar and overlapping Circle IDs after a nam
   assert.equal(afterRename.name, "New Name");
   assert.equal(afterRename.handle, "@new.name");
   assert.equal(afterRename.hostFollows, true);
+});
+
+test("exactly 38 fixed synthetic accounts have field-specific previous-name demo cues", () => {
+  const now = new Date("2026-10-10T12:00:00.000Z");
+  const changed = syntheticPeople.map((person) => ({ person, cue: getSyntheticNameChangeCue(person, now) })).filter(({ cue }) => cue);
+  assert.equal(changed.length, 38);
+  assert.equal(new Set(changed.map(({ person }) => person.username)).size, 38);
+  assert.equal(changed.filter(({ cue }) => cue.previousUsername && cue.previousDisplayName).length, 12);
+  assert.equal(changed.filter(({ cue }) => !cue.previousUsername && cue.previousDisplayName).length, 13);
+  assert.equal(changed.filter(({ cue }) => cue.previousUsername && !cue.previousDisplayName).length, 13);
+  for (const { person, cue } of changed) {
+    assert.notEqual(cue.previousUsername, person.username);
+    assert.notEqual(cue.previousDisplayName, person.display_name);
+    assert.equal(getSyntheticNameChangeCue(person, now), cue);
+  }
+});
+
+test("synthetic previous-name cues expire and do not attach to changed row labels", () => {
+  const original = syntheticPeople.find((person) => getSyntheticNameChangeCue(person, new Date("2026-10-10T12:00:00.000Z")));
+  assert.ok(original);
+  assert.equal(getSyntheticNameChangeCue(original, new Date("2026-11-03T12:00:00.000Z")), null);
+  assert.equal(getSyntheticNameChangeCue({ ...original, display_name: "Another Name" }, new Date("2026-10-10T12:00:00.000Z")), null);
 });
 
 test("Circle edits change only targeted memberships, preserving follows and other circles", async () => {
