@@ -45,7 +45,7 @@ function NavigationIcon({ name }) {
   return <svg {...common}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="9" r="3" /><path d="M6.5 19c.9-2.6 2.8-4 5.5-4s4.6 1.4 5.5 4" /></svg>;
 }
 
-function Verified({ person }) {
+export function Verified({ person }) {
   return person.verified ? <span className="verified" role="img" aria-label="Verified account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.7l2.08 1.66 2.66-.18 1.31 2.32 2.45 1.05-.1 2.66 1.66 2.08-1.66 2.08.1 2.66-2.45 1.05-1.31 2.32-2.66-.18L12 22.3l-2.08-1.66-2.66.18-1.31-2.32-2.45-1.05.1-2.66-1.66-2.08 1.66-2.08-.1-2.66 2.45-1.05 1.31-2.32 2.66.18L12 1.7z" /><path className="verified-check" d="M10.18 15.87 6.94 12.63l1.48-1.48 1.76 1.76 5.42-5.42 1.48 1.48-6.9 6.9z" /></svg></span> : null;
 }
 
@@ -367,7 +367,10 @@ export default function Dashboard({ people, circles, accounts, accountId, user, 
     return <article className={`reference-row ${tab === "circles" && !route ? "circle-row" : "relationship-row"} ${suggested ? "suggested-row" : ""}`} key={person.id}>
     <input className="check" type="checkbox" checked={selected.has(person.id)} onChange={(event) => toggleSelected(person.id, event.target.checked)} aria-label={`Select ${person.name}`} />
     {hasStory(person) ? <button className="account-story-button" onClick={() => showStory(person)} aria-label={`Open ${person.name}'s story`}><PersonAvatar person={person} /></button> : <a className="account-profile-avatar-link" href={profileHref} aria-label={`Open ${person.name}'s profile`}><PersonAvatar person={person} /></a>}
-    <div className="person-info"><strong><a className="person-profile-link person-name" href={profileHref}>{person.name}</a><Verified person={person} /></strong><a className="person-profile-link person-profile-handle" href={profileHref}>{person.handle}</a></div>
+    <div className="person-info"><a className="person-profile-link person-identity-link" href={profileHref} aria-label={`Open ${person.name}'s profile`}>
+      <span className="person-username-line"><span>{person.handle}</span>{person.previousUsername && <del aria-label={`Previous username ${person.previousUsername}`}>@{person.previousUsername}</del>}</span>
+      <span className="person-display-line"><strong className="person-name">{person.name}</strong><Verified person={person} />{person.previousDisplayName && <del aria-label={`Previous display name ${person.previousDisplayName}`}>{person.previousDisplayName}</del>}</span>
+    </a></div>
     {tab === "circles" && !route && !suggested && <div className="chips">{person.circles.map((id) => <span className="chip" key={id}>{circles.find((circle) => circle.id === id)?.name}</span>)}</div>}
     <div className="row-actions">{actionFor(person, suggested).map((action) => <button key={action} onClick={() => handleAction(person, action)}>{action}</button>)}
       {route !== "blocked" && (suggested || tab !== "circles" || route === "favorites") && <div className="more-wrap"><button className="more-button" onClick={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); setMoreFor(moreFor?.person.id === person.id ? null : { person, suggested, top: bounds.bottom + 8, right: window.innerWidth - bounds.right }); }} aria-label={`More options for ${person.name}`} aria-expanded={moreFor?.person.id === person.id} aria-haspopup="menu">⋮</button></div>}

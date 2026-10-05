@@ -1,6 +1,6 @@
 import { supabase } from "./supabase.js";
 import { parseAccountSearch } from "./search.js";
-import { planManagedAccountNameChange } from "./nameChange.js";
+import { isNameChangeExpired, planManagedAccountNameChange } from "./nameChange.js";
 
 const colors = ["#d77658", "#5d7c78", "#756595", "#ce9b43", "#b55c7d", "#4d7bb5"];
 const firstNames = ["Maya", "Jon", "Sofia", "Andre", "Nia", "Leo", "Avery", "Noor", "Mateo", "Ivy", "Riley", "Zoe"];
@@ -46,7 +46,7 @@ function numberInBand(index, bands) {
   return low + ((index * 137 + 41) % (high - low + 1));
 }
 
-const syntheticPeople = Array.from({ length: 132 }, (_, index) => {
+export const syntheticPeople = Array.from({ length: 132 }, (_, index) => {
   const first = firstNames[index % firstNames.length];
   const last = lastNames[Math.floor(index / firstNames.length) % lastNames.length];
   const username = `${first}.${last}.${String(index + 1).padStart(3, "0")}`.toLowerCase();
@@ -66,7 +66,33 @@ const syntheticPeople = Array.from({ length: 132 }, (_, index) => {
   };
 });
 
-function toPerson(row, index, membershipRows, followingRows = [], accountState = null, useLegacyState = false) {
+// Fixed, synthetic examples for testing the private previous-name cue. Nothing is written to people.
+const demoNameChangedAt = "2026-10-03T12:00:00.000Z";
+const demoOrder = Array.from({ length: syntheticPeople.length }, (_, index) => index);
+let demoSeed = 38261;
+for (let index = demoOrder.length - 1; index > 0; index -= 1) {
+  demoSeed = (Math.imul(demoSeed, 1664525) + 1013904223) >>> 0;
+  const swapIndex = demoSeed % (index + 1);
+  [demoOrder[index], demoOrder[swapIndex]] = [demoOrder[swapIndex], demoOrder[index]];
+}
+const demoNameChanges = new Map(demoOrder.slice(0, 38).map((personIndex, order) => {
+  const person = syntheticPeople[personIndex];
+  const [first, last] = person.display_name.split(" ");
+  return [person.username, {
+    currentDisplayName: person.display_name,
+    previousUsername: order % 3 === 0 ? null : person.username.replace(`.${last.toLowerCase()}.`, `.${last[0].toLowerCase()}.`),
+    previousDisplayName: order % 3 === 1 ? null : `${first} ${last[0]}.`,
+    nameChangedAt: demoNameChangedAt,
+  }];
+}));
+
+export function getSyntheticNameChangeCue(row, now = new Date()) {
+  const cue = demoNameChanges.get(row.username);
+  if (!cue || row.display_name !== cue.currentDisplayName || isNameChangeExpired(cue.nameChangedAt, now)) return null;
+  return cue;
+}
+
+export function toPerson(row, index, membershipRows, followingRows = [], accountState = null, useLegacyState = false) {
   const state = accountState || (useLegacyState ? {
     account_follows_person: row.host_follows,
     person_follows_account: row.follows_host,
@@ -78,11 +104,15 @@ function toPerson(row, index, membershipRows, followingRows = [], accountState =
     suggestion_dismissed_at: row.suggestion_dismissed_at,
     notification_settings: row.notification_settings,
   } : {});
+  const nameCue = getSyntheticNameChangeCue(row);
   return {
     id: row.id,
     name: row.display_name,
     handle: `@${row.username}`,
     username: row.username,
+    previousUsername: nameCue?.previousUsername || null,
+    previousDisplayName: nameCue?.previousDisplayName || null,
+    nameChangedAt: nameCue?.nameChangedAt || null,
     avatarUrl: row.avatar_url,
     circles: membershipRows.filter((membership) => membership.person_id === row.id).map((membership) => membership.circle_id),
     color: colors[index % colors.length],
@@ -304,7 +334,7 @@ export async function blockPeople(accountId, ids) {
 export async function replaceCircleMemberships(accountId, ids, draft, people) {
   const changes = ids.map((personId) => {
     const current = new Set(people.find((person) => person.id === personId)?.circles || []);
-    const next = new Set(draft[personId] || []);
+    const next = new Set(draft[personId] ?? current);
     return { personId, removed: [...current].filter((circleId) => !next.has(circleId)), added: [...next].filter((circleId) => !current.has(circleId)) };
   });
   for (const { personId, removed } of changes) if (removed.length) unwrap(await supabase.from("circle_members").delete().eq("account_id", accountId).eq("person_id", personId).in("circle_id", removed).select("person_id"));

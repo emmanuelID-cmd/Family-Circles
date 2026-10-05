@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProfileMediaGrid from "../components/ProfileMediaGrid.jsx";
+import { Verified } from "../Dashboard.jsx";
 import "./UserProfile.css";
 
 function PlaceholderAvatar({ className = "", src }) {
@@ -21,14 +22,16 @@ export default function UserProfile({ profile, onBack }) {
     <div className="visited-profile-shell">
       <header className="visited-profile-header">
         <button type="button" className="visited-profile-back" onClick={onBack} aria-label="Back to Family Circles"><BackIcon /></button>
-        <h1>{username}</h1>
+        <div className="visited-profile-names">
+          <h1>{username}{profile.previousUsername && <del aria-label={`Previous username ${profile.previousUsername}`}>@{profile.previousUsername}</del>}</h1>
+          <p><span>{displayName}</span><Verified person={profile} />{profile.previousDisplayName && <del aria-label={`Previous display name ${profile.previousDisplayName}`}>{profile.previousDisplayName}</del>}</p>
+        </div>
         <button type="button" className="visited-profile-icon-button" aria-label="More profile options">···</button>
       </header>
 
       <section className="visited-profile-summary" aria-label={`${displayName} profile`}>
         <PlaceholderAvatar className="visited-profile-main-avatar" src={profile.avatarUrl} />
         <div className="visited-profile-identity">
-          <h2>{displayName}</h2>
           <div className="visited-profile-stats">
             <span><strong>{profile.posts || "250"}</strong> posts</span>
             <span><strong>{profile.followers || "683"}</strong> followers</span>
